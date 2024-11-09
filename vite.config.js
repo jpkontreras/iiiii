@@ -4,18 +4,18 @@ import fs from 'node:fs';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-    server: {
-        https: {
-            key: fs.readFileSync('./nginx/certs/localhost-key.pem'),
-            cert: fs.readFileSync('./nginx/certs/localhost.pem'),
-        },
+  server: {
+    https: {
+      key: fs.readFileSync('./.dev/nginx/certs/localhost-key.pem'),
+      cert: fs.readFileSync('./.dev/nginx/certs/localhost.pem'),
     },
-    plugins: [
-        laravel({
-            input: 'resources/js/app.tsx',
-            ssr: 'resources/js/ssr.tsx',
-            refresh: true,
-        }),
-        react(),
-    ],
+  },
+  plugins: [
+    laravel({
+      input: 'resources/js/app.tsx',
+      ssr: 'resources/js/ssr.tsx',
+      refresh: true,
+    }),
+    react(),
+  ],
 });
