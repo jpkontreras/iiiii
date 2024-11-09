@@ -18,6 +18,10 @@
     @viteReactRefresh
     @vite(['resources/js/app.tsx', "resources/js/Pages/{$page['component']}.tsx"])
     @inertiaHead
+
+    <script>
+        Ziggy.url = "{{ env('APP_URL') }}"
+    </script>
 </head>
 
 <body class="font-sans antialiased">
