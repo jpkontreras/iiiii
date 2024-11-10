@@ -34,7 +34,6 @@ return new class extends Migration
       $table->id();
       $table->string('name');
       $table->text('description')->nullable();
-      $table->foreignId('menu_id')->constrained()->onDelete('cascade');
       $table->foreignId('parent_category_id')->nullable()->constrained('categories')->onDelete('set null');
       $table->integer('order')->default(0);
       $table->timestamps();
@@ -47,7 +46,7 @@ return new class extends Migration
       $table->text('description')->nullable();
       $table->decimal('price', 10, 2);
       $table->foreignId('menu_id')->constrained()->onDelete('cascade');
-      $table->foreignId('category_id')->nullable()->constrained()->onDelete('set null');
+      $table->foreignId('category_id')->constrained()->onDelete('cascade');
       $table->string('photo_path')->nullable();
       $table->boolean('is_available')->default(true);
       $table->timestamps();

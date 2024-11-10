@@ -16,15 +16,13 @@ final class Category extends Model
   protected $fillable = [
     'name',
     'description',
-    'menu_id',
-    'parent_category_id', // for subcategories
-    'order', // for custom sorting
+    'parent_category_id',
+    'order',
   ];
 
-  public function menu(): BelongsTo
-  {
-    return $this->belongsTo(Menu::class);
-  }
+  protected $casts = [
+    'order' => 'integer',
+  ];
 
   public function menuItems(): HasMany
   {

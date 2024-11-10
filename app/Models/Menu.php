@@ -30,11 +30,6 @@ final class Menu extends Model
     return $this->belongsTo(Restaurant::class);
   }
 
-  public function categories(): HasMany
-  {
-    return $this->hasMany(Category::class);
-  }
-
   public function menuItems(): HasMany
   {
     return $this->hasMany(MenuItem::class);
