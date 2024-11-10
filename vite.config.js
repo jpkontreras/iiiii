@@ -5,6 +5,7 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   server: {
+    host: 'localhost',
     https: {
       key: fs.readFileSync('./.dev/nginx/certs/localhost-key.pem'),
       cert: fs.readFileSync('./.dev/nginx/certs/localhost.pem'),
