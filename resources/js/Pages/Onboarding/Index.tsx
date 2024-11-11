@@ -1,158 +1,125 @@
-import Authenticated from '@/Layouts/AuthenticatedLayout';
 import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { router } from '@inertiajs/react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Head, router } from '@inertiajs/react';
 import { __ } from 'laravel-translator';
-import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import * as z from 'zod';
-
-const formSchema = z.object({
-  name: z
-    .string()
-    .min(2, __('onboarding.form.restaurant.validation.min'))
-    .max(50, __('onboarding.form.restaurant.validation.max')),
-  description: z
-    .string()
-    .min(10, __('onboarding.form.description.validation.min'))
-    .max(500, __('onboarding.form.description.validation.max')),
-});
-
-type OnboardingForm = z.infer<typeof formSchema>;
+import { Building2, ChefHat, ClipboardList, Users2 } from 'lucide-react';
+import { useState } from 'react';
 
 interface Props {
-  errors: Partial<Record<keyof OnboardingForm, string>>;
+  auth: any;
 }
 
-export default function Onboarding({ errors, ...rest }: Props) {
-  console.log({ errors, ...rest });
+export default function OnboardingIndex({ auth }: Props) {
+  const [agreed, setAgreed] = useState(false);
 
-  const form = useForm<OnboardingForm>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-      description: '',
+  const handleContinue = () => {
+    if (!agreed) return;
+    router.post(route('onboarding.start'));
+  };
+
+  const steps = [
+    {
+      icon: <Building2 className="h-5 w-5" />,
+      text: __('onboarding.steps.restaurant_info'),
     },
-  });
-
-  // Set server-side validation errors when they exist
-  useEffect(() => {
-    if (errors) {
-      console.log({ e: Object.keys(errors) });
-
-      Object.keys(errors).forEach((key) => {
-        const errorKey = key as keyof OnboardingForm;
-        form.setError(errorKey, {
-          type: 'server',
-          message: errors[errorKey],
-        });
-      });
-    }
-  }, [errors, form.setError]);
-
-  function onSubmit(values: OnboardingForm) {
-    router.post('/onboarding', values);
-  }
+    {
+      icon: <ChefHat className="h-5 w-5" />,
+      text: __('onboarding.steps.menu_setup'),
+    },
+    {
+      icon: <Users2 className="h-5 w-5" />,
+      text: __('onboarding.steps.staff_management'),
+    },
+    {
+      icon: <ClipboardList className="h-5 w-5" />,
+      text: __('onboarding.steps.final_review'),
+    },
+  ];
 
   return (
-    <Authenticated showNavbar={false}>
-      <div className="container mx-auto max-w-[800px] py-10">
-        <Card>
-          <CardHeader className="space-y-4">
-            <CardTitle className="text-3xl">
-              {__('onboarding.welcome.title')}
+    <>
+      <Head title={__('onboarding.welcome')} />
+
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-2xl">
+          <div className="-mt-12 flex justify-center">
+            <img src="/images/icon.png" alt="IRMA Logo" className="w-72" />
+          </div>
+
+          <CardHeader>
+            <CardTitle className="text-center text-2xl">
+              {__('onboarding.welcome')}
             </CardTitle>
-            <CardDescription className="text-base">
-              {__('onboarding.welcome.description')}
+            <CardDescription className="mt-2 text-center text-lg">
+              {__('onboarding.description')}
             </CardDescription>
           </CardHeader>
+
           <CardContent>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
-              >
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {__('onboarding.form.restaurant.label')}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={__(
-                            'onboarding.form.restaurant.placeholder',
-                          )}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            <div className="space-y-8">
+              <ul className="space-y-4">
+                {steps.map((step, index) => (
+                  <li key={index} className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      {step.icon}
+                    </div>
+                    <span className="text-lg font-medium">{step.text}</span>
+                  </li>
+                ))}
+              </ul>
 
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {__('onboarding.form.description.label')}
-                      </FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder={__(
-                            'onboarding.form.description.placeholder',
-                          )}
-                          className="min-h-[120px] resize-none"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                      <p className="text-xs text-muted-foreground">
-                        {__('onboarding.form.description.characters_count', {
-                          count: field.value?.length || 0,
-                        })}
-                      </p>
-                    </FormItem>
-                  )}
-                />
-
-                <div className="pt-4">
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={form.formState.isSubmitting}
+              <div className="rounded-lg bg-muted p-4">
+                <h4 className="mb-2 font-semibold">
+                  {__('onboarding.agreement.title')}
+                </h4>
+                <p className="mb-4 text-sm text-muted-foreground">
+                  {__('onboarding.agreement.description')}
+                </p>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="terms"
+                    checked={agreed}
+                    onCheckedChange={(checked) => setAgreed(checked as boolean)}
+                  />
+                  <label
+                    htmlFor="terms"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
-                    {form.formState.isSubmitting
-                      ? __('onboarding.form.submit.saving')
-                      : __('onboarding.form.submit.continue')}
-                  </Button>
+                    {__('onboarding.agreement.accept')}
+                  </label>
                 </div>
-              </form>
-            </Form>
+                <div className="mt-4 flex gap-4 text-sm">
+                  <a href="#" className="text-primary hover:underline">
+                    {__('onboarding.agreement.terms_link')}
+                  </a>
+                  <a href="#" className="text-primary hover:underline">
+                    {__('onboarding.agreement.privacy_link')}
+                  </a>
+                </div>
+              </div>
+            </div>
           </CardContent>
+
+          <CardFooter>
+            <Button
+              className="w-full"
+              size="lg"
+              disabled={!agreed}
+              onClick={handleContinue}
+            >
+              {__('onboarding.agreement.accept')}
+            </Button>
+          </CardFooter>
         </Card>
       </div>
-    </Authenticated>
+    </>
   );
 }

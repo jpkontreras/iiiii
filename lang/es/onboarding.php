@@ -1,53 +1,30 @@
 <?php
 
 return [
-  'welcome' => [
-    'title' => 'Bienvenido a IRMA',
-    'description' => 'Comencemos configurando el perfil de tu restaurante. Por favor, proporciona el nombre de tu restaurante y una breve descripción.',
-  ],
-  'form' => [
-    'restaurant' => [
-      'label' => 'Nombre del Restaurante',
-      'placeholder' => 'Ingresa el nombre de tu restaurante',
-      'validation' => [
-        'min' => 'El nombre del restaurante debe tener al menos 2 caracteres.',
-        'max' => 'El nombre del restaurante no debe exceder los 50 caracteres.',
-      ],
-    ],
-    'description' => [
-      'label' => 'Descripción',
-      'placeholder' => 'Cuéntanos sobre tu restaurante...',
-      'validation' => [
-        'min' => 'La descripción debe tener al menos 10 caracteres.',
-        'max' => 'La descripción no debe exceder los 500 caracteres.',
-      ],
-      'characters_count' => ':count/500 caracteres',
-    ],
-    'submit' => [
-      'saving' => 'Guardando...',
-      'continue' => 'Continuar',
-    ],
-  ],
+  'welcome' => 'Bienvenido a IRMA',
+  'description' => 'Antes de comenzar, necesitamos configurar el perfil de tu restaurante. Esto nos ayudará a brindarte la mejor experiencia.',
   'steps' => [
-    'agree' => [
-      'title' => 'Aceptar para comenzar',
-      'cta' => 'Acepto'
-    ],
-    'restaurant' => [
-      'title' => 'Detalles del Restaurante',
-      'cta' => 'Continuar'
-    ],
-    'menus' => [
-      'title' => 'Crear Menús',
-      'cta' => 'Continuar'
-    ],
-    'menu_items' => [
-      'title' => 'Agregar Elementos del Menú',
-      'cta' => 'Continuar'
-    ],
-    'collaborators' => [
-      'title' => 'Agregar Colaboradores',
-      'cta' => 'Completar Configuración'
+    'restaurant_info' => 'Información del Restaurante',
+    'menu_setup' => 'Configuración del Menú',
+    'staff_management' => 'Gestión del Personal',
+    'final_review' => 'Revisión Final'
+  ],
+  'menu_items' => [
+    'title' => 'Elementos del Menú',
+    'description' => 'Podrás:',
+    'features' => [
+      'Crear y organizar las categorías de tu menú',
+      'Agregar platillos con precios y descripciones',
+      'Subir fotos de tus platillos',
+      'Establecer disponibilidad y opciones especiales',
+      'Gestionar modificadores y variaciones'
     ]
+  ],
+  'agreement' => [
+    'title' => 'Términos de Servicio',
+    'description' => 'Al continuar, aceptas nuestros términos de servicio y política de privacidad. Te guiaremos a través del proceso de configuración del perfil de tu restaurante.',
+    'accept' => 'Acepto y deseo continuar',
+    'terms_link' => 'Leer Términos de Servicio',
+    'privacy_link' => 'Leer Política de Privacidad'
   ]
 ];

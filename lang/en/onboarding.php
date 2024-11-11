@@ -1,53 +1,30 @@
 <?php
 
 return [
-  'welcome' => [
-    'title' => 'Welcome to IRMA',
-    'description' => "Let's start by setting up your restaurant profile. Please provide your restaurant's name and a brief description.",
-  ],
-  'form' => [
-    'restaurant' => [
-      'label' => 'Restaurant Name',
-      'placeholder' => 'Enter your restaurant name',
-      'validation' => [
-        'min' => 'Restaurant name must be at least 2 characters.',
-        'max' => 'Restaurant name must not exceed 50 characters.',
-      ],
-    ],
-    'description' => [
-      'label' => 'Description',
-      'placeholder' => 'Tell us about your restaurant...',
-      'validation' => [
-        'min' => 'Description must be at least 10 characters.',
-        'max' => 'Description must not exceed 500 characters.',
-      ],
-      'characters_count' => ':count/500 characters',
-    ],
-    'submit' => [
-      'saving' => 'Saving...',
-      'continue' => 'Continue',
-    ],
-  ],
+  'welcome' => 'Welcome to IRMA',
+  'description' => 'Before we begin, we need to set up your restaurant profile. This will help us provide you with the best experience.',
   'steps' => [
-    'agree' => [
-      'title' => 'Agree to onboard',
-      'cta' => 'I Agree'
-    ],
-    'restaurant' => [
-      'title' => 'Restaurant Details',
-      'cta' => 'Continue'
-    ],
-    'menus' => [
-      'title' => 'Create Menus',
-      'cta' => 'Continue'
-    ],
-    'menu_items' => [
-      'title' => 'Add Menu Items',
-      'cta' => 'Continue'
-    ],
-    'collaborators' => [
-      'title' => 'Add Collaborators',
-      'cta' => 'Complete Setup'
+    'restaurant_info' => 'Restaurant Information',
+    'menu_setup' => 'Menu Setup',
+    'staff_management' => 'Staff Management',
+    'final_review' => 'Final Review'
+  ],
+  'menu_items' => [
+    'title' => 'Menu Items',
+    'description' => 'You\'ll be able to:',
+    'features' => [
+      'Create and organize your menu categories',
+      'Add dishes with prices and descriptions',
+      'Upload photos of your dishes',
+      'Set item availability and special options',
+      'Manage modifiers and variations'
     ]
+  ],
+  'agreement' => [
+    'title' => 'Terms of Service',
+    'description' => 'By proceeding, you agree to our terms of service and privacy policy. We will guide you through the process of setting up your restaurant profile.',
+    'accept' => 'I agree and want to continue',
+    'terms_link' => 'Read Terms of Service',
+    'privacy_link' => 'Read Privacy Policy'
   ]
 ];
