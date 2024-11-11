@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from '@inertiajs/react';
+import { __ } from 'laravel-translator';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -26,12 +27,12 @@ import * as z from 'zod';
 const formSchema = z.object({
   name: z
     .string()
-    .min(2, 'Restaurant name must be at least 2 characters.')
-    .max(50, 'Restaurant name must not exceed 50 characters.'),
+    .min(2, __('onboarding.form.restaurant.validation.min'))
+    .max(50, __('onboarding.form.restaurant.validation.max')),
   description: z
     .string()
-    .min(10, 'Description must be at least 10 characters.')
-    .max(500, 'Description must not exceed 500 characters.'),
+    .min(10, __('onboarding.form.description.validation.min'))
+    .max(500, __('onboarding.form.description.validation.max')),
 });
 
 type OnboardingForm = z.infer<typeof formSchema>;
@@ -40,7 +41,9 @@ interface Props {
   errors: Partial<Record<keyof OnboardingForm, string>>;
 }
 
-export default function Onboarding({ errors }: Props) {
+export default function Onboarding({ errors, ...rest }: Props) {
+  console.log({ errors, ...rest });
+
   const form = useForm<OnboardingForm>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -73,10 +76,11 @@ export default function Onboarding({ errors }: Props) {
       <div className="container mx-auto max-w-[800px] py-10">
         <Card>
           <CardHeader className="space-y-4">
-            <CardTitle className="text-3xl">Welcome to IRMA</CardTitle>
+            <CardTitle className="text-3xl">
+              {__('onboarding.welcome.title')}
+            </CardTitle>
             <CardDescription className="text-base">
-              Let's start by setting up your restaurant profile. Please provide
-              your restaurant's name and a brief description.
+              {__('onboarding.welcome.description')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -90,10 +94,14 @@ export default function Onboarding({ errors }: Props) {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Restaurant Name</FormLabel>
+                      <FormLabel>
+                        {__('onboarding.form.restaurant.label')}
+                      </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Enter your restaurant name"
+                          placeholder={__(
+                            'onboarding.form.restaurant.placeholder',
+                          )}
                           {...field}
                         />
                       </FormControl>
@@ -107,17 +115,23 @@ export default function Onboarding({ errors }: Props) {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description</FormLabel>
+                      <FormLabel>
+                        {__('onboarding.form.description.label')}
+                      </FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Tell us about your restaurant..."
+                          placeholder={__(
+                            'onboarding.form.description.placeholder',
+                          )}
                           className="min-h-[120px] resize-none"
                           {...field}
                         />
                       </FormControl>
                       <FormMessage />
                       <p className="text-xs text-muted-foreground">
-                        {field.value?.length || 0}/500 characters
+                        {__('onboarding.form.description.characters_count', {
+                          count: field.value?.length || 0,
+                        })}
                       </p>
                     </FormItem>
                   )}
@@ -129,7 +143,9 @@ export default function Onboarding({ errors }: Props) {
                     className="w-full"
                     disabled={form.formState.isSubmitting}
                   >
-                    {form.formState.isSubmitting ? 'Saving...' : 'Continue'}
+                    {form.formState.isSubmitting
+                      ? __('onboarding.form.submit.saving')
+                      : __('onboarding.form.submit.continue')}
                   </Button>
                 </div>
               </form>

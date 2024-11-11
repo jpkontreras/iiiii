@@ -4,9 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
-
-use App\Models\User;
-use Spatie\Onboard\Facades\Onboard;
+use App\Onboarding\RestaurantOnboarding;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -15,13 +13,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-
-        Onboard::addStep('Agree to onboard')
-            ->link('/onboarding')
-            ->cta('Complete')
-            ->completeIf(function (User $model) {
-                return false;
-            });
+        RestaurantOnboarding::register();
     }
 
     /**

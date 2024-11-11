@@ -1,4 +1,5 @@
 import react from '@vitejs/plugin-react';
+import laravelTranslator from 'laravel-translator/vite';
 import laravel from 'laravel-vite-plugin';
 import fs from 'node:fs';
 import { defineConfig } from 'vite';
@@ -18,5 +19,6 @@ export default defineConfig({
       refresh: true,
     }),
     react(),
+    laravelTranslator(),
   ],
 });
