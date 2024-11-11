@@ -51,7 +51,11 @@ export default function OnboardingIndex({ auth }: Props) {
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
         <Card className="w-full max-w-2xl">
           <div className="mt-4 flex justify-center md:-mt-24">
-            <img src="/images/icon.png" alt="IRMA Logo" className="w-72" />
+            <img
+              src="/images/icon2.png"
+              alt="IRMA Logo"
+              className="w-72 rounded-3xl p-5"
+            />
           </div>
 
           <CardHeader>

@@ -8,6 +8,14 @@ return new class extends Migration
 {
   public function up(): void
   {
+    // User Settings table
+    Schema::create('user_settings', function (Blueprint $table) {
+      $table->id();
+      $table->foreignId('user_id')->unique()->constrained()->onDelete('cascade');
+      $table->json('preferences')->nullable();
+      $table->timestamps();
+    });
+
     // Restaurants table
     Schema::create('restaurants', function (Blueprint $table) {
       $table->id();
@@ -115,5 +123,6 @@ return new class extends Migration
     Schema::dropIfExists('categories');
     Schema::dropIfExists('menus');
     Schema::dropIfExists('restaurants');
+    Schema::dropIfExists('user_settings');
   }
 };
