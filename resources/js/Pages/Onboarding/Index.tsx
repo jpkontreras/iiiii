@@ -8,21 +8,21 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Head, router } from '@inertiajs/react';
+import Authenticated from '@/Layouts/AuthenticatedLayout';
+import { Head, useForm } from '@inertiajs/react';
 import { __ } from 'laravel-translator';
 import { Building2, ChefHat, ClipboardList, Users2 } from 'lucide-react';
-import { useState } from 'react';
 
-interface Props {
-  auth: any;
-}
+export default function OnboardingIndex() {
+  const { data, setData, post, processing } = useForm({
+    agreed: false,
+  });
 
-export default function OnboardingIndex({ auth }: Props) {
-  const [agreed, setAgreed] = useState(false);
+  const handleContinue = (e) => {
+    e.preventDefault();
 
-  const handleContinue = () => {
-    if (!agreed) return;
-    router.post(route('onboarding.start'));
+    if (!data.agreed) return;
+    post(route('onboarding.start'));
   };
 
   const steps = [
@@ -45,85 +45,89 @@ export default function OnboardingIndex({ auth }: Props) {
   ];
 
   return (
-    <>
+    <Authenticated showNavbar={false}>
       <Head title={__('onboarding.welcome')} />
 
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-2xl">
-          <div className="mt-4 flex justify-center md:-mt-24">
-            <img
-              src="/images/icon2.png"
-              alt="IRMA Logo"
-              className="w-72 rounded-3xl p-5"
-            />
-          </div>
+        <form onSubmit={handleContinue}>
+          <Card className="w-full max-w-2xl">
+            <div className="mt-4 flex justify-center md:-mt-24">
+              <img
+                src="/images/icon2.png"
+                alt="IRMA Logo"
+                className="w-72 rounded-3xl p-5"
+              />
+            </div>
 
-          <CardHeader>
-            <CardTitle className="text-center text-2xl">
-              {__('onboarding.welcome')}
-            </CardTitle>
-            <CardDescription className="mt-2 text-center text-lg">
-              {__('onboarding.description')}
-            </CardDescription>
-          </CardHeader>
+            <CardHeader>
+              <CardTitle className="text-center text-2xl">
+                {__('onboarding.welcome')}
+              </CardTitle>
+              <CardDescription className="mt-2 text-center text-lg">
+                {__('onboarding.description')}
+              </CardDescription>
+            </CardHeader>
 
-          <CardContent>
-            <div className="space-y-8">
-              <ul className="space-y-4">
-                {steps.map((step, index) => (
-                  <li key={index} className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
-                      {step.icon}
-                    </div>
-                    <span className="text-lg font-medium">{step.text}</span>
-                  </li>
-                ))}
-              </ul>
+            <CardContent>
+              <div className="space-y-8">
+                <ul className="space-y-4">
+                  {steps.map((step, index) => (
+                    <li key={index} className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+                        {step.icon}
+                      </div>
+                      <span className="text-lg font-medium">{step.text}</span>
+                    </li>
+                  ))}
+                </ul>
 
-              <div className="rounded-lg bg-muted p-4">
-                <h4 className="mb-2 font-semibold">
-                  {__('onboarding.agreement.title')}
-                </h4>
-                <p className="mb-4 text-sm text-muted-foreground">
-                  {__('onboarding.agreement.description')}
-                </p>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="terms"
-                    checked={agreed}
-                    onCheckedChange={(checked) => setAgreed(checked as boolean)}
-                  />
-                  <label
-                    htmlFor="terms"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    {__('onboarding.agreement.accept')}
-                  </label>
-                </div>
-                <div className="mt-4 flex gap-4 text-sm">
-                  <a href="#" className="text-primary hover:underline">
-                    {__('onboarding.agreement.terms_link')}
-                  </a>
-                  <a href="#" className="text-primary hover:underline">
-                    {__('onboarding.agreement.privacy_link')}
-                  </a>
+                <div className="rounded-lg bg-muted p-4">
+                  <h4 className="mb-2 font-semibold">
+                    {__('onboarding.agreement.title')}
+                  </h4>
+                  <p className="mb-4 text-sm text-muted-foreground">
+                    {__('onboarding.agreement.description')}
+                  </p>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="terms"
+                      checked={data.agreed}
+                      onCheckedChange={(checked) =>
+                        setData('agreed', checked as boolean)
+                      }
+                    />
+                    <label
+                      htmlFor="terms"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {__('onboarding.agreement.accept')}
+                    </label>
+                  </div>
+                  <div className="mt-4 flex gap-4 text-sm">
+                    <a href="#" className="text-primary hover:underline">
+                      {__('onboarding.agreement.terms_link')}
+                    </a>
+                    <a href="#" className="text-primary hover:underline">
+                      {__('onboarding.agreement.privacy_link')}
+                    </a>
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
+            </CardContent>
 
-          <CardFooter>
-            <Button
-              className="w-full"
-              size="lg"
-              disabled={!agreed}
-              onClick={handleContinue}
-            >
-              {__('onboarding.agreement.accept')}
-            </Button>
-          </CardFooter>
-        </Card>
+            <CardFooter>
+              <Button
+                type="submit"
+                className="w-full"
+                size="lg"
+                disabled={!data.agreed || processing}
+              >
+                {__('onboarding.agreement.accept')}
+              </Button>
+            </CardFooter>
+          </Card>
+        </form>
       </div>
-    </>
+    </Authenticated>
   );
 }

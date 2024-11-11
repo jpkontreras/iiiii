@@ -24,10 +24,11 @@ class Onboarding
         $user = Auth::user();
         $onboardingState = $user->onboarding();
 
-        // Share onboarding state with Inertia
+        // Share onboarding state with Inertia for all requests
         Inertia::share('onboarding', $onboardingState);
 
-        if ($onboardingState->inProgress()) {
+        // Only handle redirects for GET requests
+        if ($request->isMethod('GET') && $onboardingState->inProgress()) {
             $nextStep = $onboardingState->nextUnfinishedStep();
 
             // Only redirect if we're not already on the target route

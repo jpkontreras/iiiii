@@ -16,14 +16,22 @@ final class OnboardingController extends Controller
         return Inertia::render('Onboarding/Index');
     }
 
-    public function start(Request $request): InertiaResponse
+    public function start(Request $request)
     {
         $user = $request->user();
-        dd($user->settings);
-        if (!$user->settings?->hasAcceptedOnboardingAgreement()) {
+
+        // Create settings if they don't exist
+        if (!$user->settings) {
+            $user->settings()->create(['preferences' => []]);
+            $user->refresh();
+        }
+
+        // Accept the agreement
+        if (!$user->settings->hasAcceptedOnboardingAgreement()) {
             $user->settings->acceptOnboardingAgreement();
         }
 
-        return Inertia::location('/onboarding/restaurant');
+        // Redirect to the next step (restaurant info)
+        return redirect()->to('/onboarding/restaurant');
     }
 }

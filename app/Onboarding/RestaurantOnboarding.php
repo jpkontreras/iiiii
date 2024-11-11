@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Onboarding;
 
 use App\Models\User;
+use Illuminate\Http\Request;
 use Spatie\Onboard\Facades\Onboard;
 
 final class RestaurantOnboarding
@@ -15,8 +16,8 @@ final class RestaurantOnboarding
     Onboard::addStep('onboarding.steps.agree.title')
       ->link('/onboarding')
       ->cta('onboarding.steps.agree.cta')
-      ->completeIf(function (User $user) {
-        return $user->settings?->hasAcceptedOnboardingAgreement() ?? false;
+      ->completeIf(function (Request $request) {
+        return $request->user()->settings->hasAcceptedOnboardingAgreement() ?? false;
       });
 
     // Step 2: Restaurant Information
