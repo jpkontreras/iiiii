@@ -25,7 +25,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/onboarding', OnboardingController::class);
-    Route::post('/onboarding', [OnboardingController::class, 'handle']);
+    Route::post('/onboarding/start', [OnboardingController::class, 'start'])->name('onboarding.start');
 });
 
 require __DIR__ . '/auth.php';

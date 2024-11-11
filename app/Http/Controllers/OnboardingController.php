@@ -1,24 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
+use Symfony\Component\HttpFoundation\Response;
 
-class OnboardingController extends Controller
+final class OnboardingController extends Controller
 {
-    public function __invoke()
+    public function __invoke(): InertiaResponse
     {
         return Inertia::render('Onboarding/Index');
     }
 
-    public function handle(Request $request)
+    public function start(Request $request): InertiaResponse
     {
-        $validated = $request->validate([
-            'title' => 'required|unique:posts|max:255',
-            'body' => 'required',
-        ]);
+        $user = $request->user();
+        dd($user->settings);
+        if (!$user->settings?->hasAcceptedOnboardingAgreement()) {
+            $user->settings->acceptOnboardingAgreement();
+        }
 
-        return response()->json(['ok' => true]);
+        return Inertia::location('/onboarding/restaurant');
     }
 }
