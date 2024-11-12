@@ -17,15 +17,15 @@ final class RestaurantOnboarding
       ->link('/onboarding')
       ->cta('onboarding.steps.agree.cta')
       ->completeIf(function (Request $request) {
-        return $request->user()->settings->hasAcceptedOnboardingAgreement() ?? false;
+        return $request->user()->hasAcceptedOnboardingAgreement() ?? false;
       });
 
     // Step 2: Restaurant Information
     Onboard::addStep('onboarding.steps.restaurant.title')
       ->link('/onboarding/restaurant')
       ->cta('onboarding.steps.restaurant.cta')
-      ->completeIf(function (User $user) {
-        return $user->restaurant()->exists();
+      ->completeIf(function (Request $request) {
+        return $request->user()->restaurant->exists();
       });
 
     // Step 3: Menu Creation

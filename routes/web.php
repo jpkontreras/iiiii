@@ -26,6 +26,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/onboarding', OnboardingController::class);
     Route::post('/onboarding/start', [OnboardingController::class, 'start'])->name('onboarding.start');
+    Route::get('/onboarding/restaurant', [OnboardingController::class, 'showRestaurant'])->name('onboarding.restaurant.show');
+    Route::post('/onboarding/restaurant', [OnboardingController::class, 'storeRestaurant'])->name('onboarding.restaurant');
 });
 
 require __DIR__ . '/auth.php';

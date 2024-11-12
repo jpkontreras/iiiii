@@ -26,5 +26,13 @@ return [
     'accept' => 'I agree and want to continue',
     'terms_link' => 'Read Terms of Service',
     'privacy_link' => 'Read Privacy Policy'
+  ],
+  'restaurant' => [
+    'title' => 'Tell us about your restaurant',
+    'name' => 'Restaurant Name',
+    'description' => 'Description',
+    'description_placeholder' => 'Tell us what makes your restaurant special...',
+    'continue' => 'Continue',
+    'required_legend' => 'Fields marked with * are required'
   ]
 ];
