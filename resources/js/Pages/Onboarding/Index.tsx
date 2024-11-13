@@ -11,7 +11,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import Authenticated from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { __ } from 'laravel-translator';
-import { Building2, ChefHat, ClipboardList, Users2 } from 'lucide-react';
 
 export default function OnboardingIndex() {
   const { data, setData, post, processing } = useForm({
@@ -24,25 +23,6 @@ export default function OnboardingIndex() {
     if (!data.agreed) return;
     post(route('onboarding.start'));
   };
-
-  const steps = [
-    {
-      icon: <Building2 className="h-5 w-5" />,
-      text: __('onboarding.steps.restaurant_info'),
-    },
-    {
-      icon: <ChefHat className="h-5 w-5" />,
-      text: __('onboarding.steps.menu_setup'),
-    },
-    {
-      icon: <Users2 className="h-5 w-5" />,
-      text: __('onboarding.steps.staff_management'),
-    },
-    {
-      icon: <ClipboardList className="h-5 w-5" />,
-      text: __('onboarding.steps.final_review'),
-    },
-  ];
 
   return (
     <Authenticated showNavbar={false}>
@@ -70,17 +50,6 @@ export default function OnboardingIndex() {
 
             <CardContent>
               <div className="space-y-8">
-                <ul className="space-y-4">
-                  {steps.map((step, index) => (
-                    <li key={index} className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
-                        {step.icon}
-                      </div>
-                      <span className="text-lg font-medium">{step.text}</span>
-                    </li>
-                  ))}
-                </ul>
-
                 <div className="rounded-lg bg-muted p-4">
                   <h4 className="mb-2 font-semibold">
                     {__('onboarding.agreement.title')}

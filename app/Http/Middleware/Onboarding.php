@@ -17,6 +17,7 @@ class Onboarding
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Skip middleware for non-authenticated users
         if (!Auth::check()) {
             return $next($request);
         }
@@ -28,12 +29,27 @@ class Onboarding
         Inertia::share('onboarding', $onboardingState);
 
         // Only handle redirects for GET requests
-        if ($request->isMethod('GET') && $onboardingState->inProgress()) {
+        if (!$request->isMethod('GET')) {
+            return $next($request);
+        }
+
+        // If onboarding is finished, skip onboarding routes
+        if ($onboardingState->finished()) {
+            $currentPath = $request->path();
+            if (str_starts_with($currentPath, 'onboarding')) {
+                return redirect()->route('dashboard');
+            }
+            return $next($request);
+        }
+
+        // Handle in-progress onboarding
+        if ($onboardingState->inProgress()) {
             $nextStep = $onboardingState->nextUnfinishedStep();
+            $targetPath = ltrim($nextStep->link, '/');
 
             // Only redirect if we're not already on the target route
-            if ($request->path() !== ltrim($nextStep->link, '/')) {
-                return redirect()->to($nextStep->link);
+            if ($request->path() !== $targetPath) {
+                return redirect()->to($nextStep->link, 302, [], true);
             }
         }
 

@@ -25,31 +25,7 @@ final class RestaurantOnboarding
       ->link('/onboarding/restaurant')
       ->cta('onboarding.steps.restaurant.cta')
       ->completeIf(function (Request $request) {
-        return $request->user()->restaurant->exists();
-      });
-
-    // Step 3: Menu Creation
-    Onboard::addStep('onboarding.steps.menus.title')
-      ->link('/onboarding/menus')
-      ->cta('onboarding.steps.menus.cta')
-      ->completeIf(function (User $user) {
-        return $user->restaurant?->menus()->exists() ?? false;
-      });
-
-    // Step 4: Menu Items (Optional)
-    Onboard::addStep('onboarding.steps.menu_items.title')
-      ->link('/onboarding/menu-items')
-      ->cta('onboarding.steps.menu_items.cta')
-      ->completeIf(function (User $user) {
-        return $user->restaurant?->menus()->whereHas('menuItems')->exists() ?? false;
-      });
-
-    // Step 5: Collaborators (Optional)
-    Onboard::addStep('onboarding.steps.collaborators.title')
-      ->link('/onboarding/collaborators')
-      ->cta('onboarding.steps.collaborators.cta')
-      ->completeIf(function (User $user) {
-        return $user->restaurant?->collaborators()->exists() ?? false;
+        return $request->user()->restaurant?->exists() || false;
       });
   }
 }

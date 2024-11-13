@@ -55,6 +55,6 @@ final class OnboardingController extends Controller
         $restaurant->save();
 
         // Move to the next onboarding step
-        return redirect()->to('/onboarding/complete');
+        return redirect()->to('dashboard?done=true');
     }
 }
