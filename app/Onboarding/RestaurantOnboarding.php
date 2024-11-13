@@ -25,7 +25,7 @@ final class RestaurantOnboarding
       ->link('/onboarding/restaurant')
       ->cta('onboarding.steps.restaurant.cta')
       ->completeIf(function (Request $request) {
-        return $request->user()->restaurant?->exists() || false;
+        return $request->user()->restaurants?->isNotEmpty() || false;
       });
   }
 }

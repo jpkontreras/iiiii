@@ -39,9 +39,9 @@ class User extends Authenticatable implements Onboardable
         return $this->hasOne(UserSettings::class);
     }
 
-    public function restaurant(): HasOne
+    public function restaurants(): HasMany
     {
-        return $this->hasOne(Restaurant::class, 'user_id');
+        return $this->hasMany(Restaurant::class, 'user_id');
     }
 
     public function hasAcceptedOnboardingAgreement(): bool

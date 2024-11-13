@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Separator } from '@/components/ui/separator';
 import {
   Sidebar,
   SidebarContent,
@@ -255,12 +256,13 @@ export default function Authenticated({
             <div className="flex w-full items-center justify-between px-6 py-4">
               <div className="flex items-center">
                 <SidebarTrigger className="mr-4 text-gray-500 hover:text-gray-600 focus:text-gray-600 focus:outline-none" />
-                {header}
+                <div className="px-6">
+                  {breadcrumbs && <Breadcrumbs items={breadcrumbs} />}
+                </div>
               </div>
             </div>
-            <div className="px-6 py-2">
-              {breadcrumbs && <Breadcrumbs items={breadcrumbs} />}
-            </div>
+            <Separator />
+            {header}
           </header>
 
           <main className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-100 p-6 dark:bg-gray-900">

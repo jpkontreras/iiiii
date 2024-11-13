@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RestaurantController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -28,6 +29,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/onboarding/start', [OnboardingController::class, 'start'])->name('onboarding.start');
     Route::get('/onboarding/restaurant', [OnboardingController::class, 'showRestaurant'])->name('onboarding.restaurant.show');
     Route::post('/onboarding/restaurant', [OnboardingController::class, 'storeRestaurant'])->name('onboarding.restaurant');
+
+
+    Route::resource('/restaurant', RestaurantController::class)->names("restaurant");
 });
 
 require __DIR__ . '/auth.php';
