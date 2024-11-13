@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RestaurantController;
@@ -35,11 +36,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/onboarding/restaurant', [OnboardingController::class, 'storeRestaurant'])->name('onboarding.restaurant');
 
     // Restaurant Routes
-    Route::resource('/restaurant', RestaurantController::class)->names("restaurant");
+    Route::resource('restaurant', RestaurantController::class)->names("restaurant");
+    Route::resource('restaurant.menu', MenuController::class)->names("restaurant.menu");
 
     // Restaurant Menu Routes
-    Route::get('/restaurant/{restaurant}/menu', [RestaurantController::class, 'showMenu'])->name('restaurant.menu.edit');
-    Route::get('/restaurant/{restaurant}/menu/create', [RestaurantController::class, 'createMenu'])->name('restaurant.menu.create');
+    // Route::get('/restaurant/{restaurant}/menu', [RestaurantController::class, 'showMenu'])->name('restaurant.menu.edit');
+    // Route::get('/restaurant/{restaurant}/menu/create', [RestaurantController::class, 'createMenu'])->name('restaurant.menu.create');
 
     // Restaurant Additional Features
     Route::get('/restaurant/{restaurant}/reservations', [RestaurantController::class, 'showReservations'])->name('restaurant.reservations');

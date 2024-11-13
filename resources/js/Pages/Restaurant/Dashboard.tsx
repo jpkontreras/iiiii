@@ -260,9 +260,9 @@ export default function Dashboard({ restaurant }: Props) {
                 <CardContent className="grid gap-4">
                   <div className="grid grid-cols-2 gap-4">
                     <Link
-                      href={route('restaurant.menu.edit', {
-                        restaurant: restaurant.id,
-                      })}
+                      // href={route('restaurant.menu.edit', {
+                      //   restaurant: restaurant.id,
+                      // })}
                       className="block"
                     >
                       <Card className="cursor-pointer hover:bg-accent">

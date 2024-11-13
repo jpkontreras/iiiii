@@ -13,13 +13,9 @@ class RestaurantController extends Controller
      */
     public function index(Request $request)
     {
-        $restaurants = $request->user()->restaurants;
-
-        if ($restaurants->count() === 1) {
-            return redirect()->route("restaurant.show", ['restaurant' => $restaurants->first()->id]);
-        }
-
-        dd("SJSJ");
+        return Inertia::render('Restaurant/Index', [
+            'restaurants' => $request->user()->restaurants
+        ]);
     }
 
     /**
@@ -43,13 +39,9 @@ class RestaurantController extends Controller
      */
     public function show(Restaurant $restaurant)
     {
-        return Inertia::render(
-            'Restaurant/Show',
-            [
-                'restaurant' => $restaurant,
-                "menu" => $restaurant->menus()
-            ]
-        );
+        return Inertia::render('Restaurant/Show', [
+            'restaurant' => $restaurant
+        ]);
     }
 
     /**
