@@ -21,7 +21,6 @@ const Breadcrumbs: React.FC = () => {
   const { breadcrumbs = [] } = usePage().props as {
     breadcrumbs?: BreadcrumbItem[];
   };
-  console.log({ breadcrumbs });
 
   if (breadcrumbs.length === 0) {
     return null;

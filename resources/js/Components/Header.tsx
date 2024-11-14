@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { router, usePage } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 
 interface HeaderProps {
@@ -7,15 +8,37 @@ interface HeaderProps {
   subtitle?: string;
 }
 
-export function Header({ back, title, subtitle }: HeaderProps) {
+interface BreadcrumbItem {
+  title: string;
+  url: string;
+  current: boolean;
+}
+
+export function Header({ title, subtitle }: HeaderProps) {
+  const { breadcrumbs = [] } = usePage().props as {
+    breadcrumbs?: BreadcrumbItem[];
+  };
+
+  const previousPage =
+    breadcrumbs.length > 1 ? breadcrumbs[breadcrumbs.length - 2] : null;
+
+  // console.log({ title, subtitle });
+  // console.log({ previousPage });
+
+  const handleBack = () => {
+    if (previousPage) {
+      router.visit(previousPage.url);
+    }
+  };
+
   return (
     <div className="flex w-full flex-col justify-center gap-y-2 bg-stone-100 px-10 py-4">
       <h2 className="flex flex-row">
-        {back && (
-          <Button variant="ghost" size="sm">
+        {previousPage && (
+          <Button variant="ghost" size="sm" onClick={handleBack}>
             <ArrowLeft size={48} />
             <span className="font-montserrat uppercase text-gray-500">
-              {back}
+              {previousPage.title}
             </span>
           </Button>
         )}

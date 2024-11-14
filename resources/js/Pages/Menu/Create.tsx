@@ -1,3 +1,4 @@
+import { Header } from '@/Components/Header';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
@@ -166,21 +167,21 @@ export default function Create({ restaurant }: Props) {
   };
 
   return (
-    <AuthenticatedLayout>
+    <AuthenticatedLayout
+      header={
+        <Header
+          title={__('menu.create')}
+          subtitle={__('menu.manage_menus_for', {
+            restaurant: restaurant.name,
+          })}
+        />
+      }
+    >
       <Head title={__('menu.create')} />
 
       <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
           <div className="p-6">
-            <div className="mb-6">
-              <h2 className="text-2xl font-semibold text-gray-900">
-                {__('menu.create')}
-              </h2>
-              <p className="mt-1 text-sm text-gray-600">
-                {__('menu.manage_menus_for', { restaurant: restaurant.name })}
-              </p>
-            </div>
-
             <div className="mb-8 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">

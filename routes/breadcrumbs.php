@@ -8,19 +8,55 @@ use Diglactic\Breadcrumbs\Breadcrumbs;
 //  with `$trail`. This is nice for IDE type checking and completion.
 use Diglactic\Breadcrumbs\Generator as BreadcrumbTrail;
 
-// Home
+// Dashboard
 Breadcrumbs::for('dashboard', function (BreadcrumbTrail $trail) {
   $trail->push('Dashboard', secure_url('dashboard'));
 });
 
-// Home > Blog
-Breadcrumbs::for('blog', function (BreadcrumbTrail $trail) {
-  $trail->parent('home');
-  $trail->push('Blog', route('blog'));
+// Dashboard > Restaurants
+Breadcrumbs::for('restaurants.index', function (BreadcrumbTrail $trail) {
+  $trail->parent('dashboard');
+  $trail->push('Restaurants', route('restaurants.index'));
 });
 
-// Home > Blog > [Category]
-Breadcrumbs::for('category', function (BreadcrumbTrail $trail, $category) {
-  $trail->parent('blog');
-  $trail->push($category->title, route('category', $category));
+// Dashboard > Restaurants > Create
+Breadcrumbs::for('restaurants.create', function (BreadcrumbTrail $trail) {
+  $trail->parent('restaurants.index');
+  $trail->push('Create Restaurant', route('restaurants.create'));
+});
+
+// Dashboard > Restaurants > [Restaurant]
+Breadcrumbs::for('restaurants.show', function (BreadcrumbTrail $trail, $restaurant) {
+  $trail->parent('restaurants.index');
+  $trail->push($restaurant->name, route('restaurants.show', $restaurant));
+});
+
+// Dashboard > Restaurants > [Restaurant] > Edit
+Breadcrumbs::for('restaurants.edit', function (BreadcrumbTrail $trail, $restaurant) {
+  $trail->parent('restaurants.show', $restaurant);
+  $trail->push('Edit', route('restaurants.edit', $restaurant));
+});
+
+// Dashboard > Restaurants > [Restaurant] > Menus
+Breadcrumbs::for('restaurants.menus.index', function (BreadcrumbTrail $trail, $restaurant) {
+  $trail->parent('restaurants.show', $restaurant);
+  $trail->push('Menus', route('restaurants.menus.index', $restaurant));
+});
+
+// Dashboard > Restaurants > [Restaurant] > Menus > Create
+Breadcrumbs::for('restaurants.menus.create', function (BreadcrumbTrail $trail, $restaurant) {
+  $trail->parent('restaurants.menus.index', $restaurant);
+  $trail->push('Create Menu', route('restaurants.menus.create', $restaurant));
+});
+
+// Dashboard > Restaurants > [Restaurant] > Menus > [Menu]
+Breadcrumbs::for('restaurants.menus.show', function (BreadcrumbTrail $trail, $restaurant, $menu) {
+  $trail->parent('restaurants.menus.index', $restaurant);
+  $trail->push($menu->name, route('restaurants.menus.show', [$restaurant, $menu]));
+});
+
+// Dashboard > Restaurants > [Restaurant] > Menus > [Menu] > Edit
+Breadcrumbs::for('restaurants.menus.edit', function (BreadcrumbTrail $trail, $restaurant, $menu) {
+  $trail->parent('restaurants.menus.show', $restaurant, $menu);
+  $trail->push('Edit', route('restaurants.menus.edit', [$restaurant, $menu]));
 });
