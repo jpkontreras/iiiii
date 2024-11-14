@@ -21,8 +21,7 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard Routes
     Route::get('/dashboard', [DashboardController::class, 'handle'])->name('dashboard');
-    Route::get('/restaurant/{restaurant}/dashboard', [DashboardController::class, 'showRestaurantDashboard'])
-        ->name('restaurant.dashboard');
+
 
     // Profile Routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -32,21 +31,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Onboarding Routes
     Route::get('/onboarding', OnboardingController::class);
     Route::post('/onboarding/start', [OnboardingController::class, 'start'])->name('onboarding.start');
-    Route::get('/onboarding/restaurant', [OnboardingController::class, 'showRestaurant'])->name('onboarding.restaurant.show');
-    Route::post('/onboarding/restaurant', [OnboardingController::class, 'storeRestaurant'])->name('onboarding.restaurant');
+    Route::get('/onboarding/restaurant', [OnboardingController::class, 'showRestaurant'])->name('onboarding.restaurants.show');
+    Route::post('/onboarding/restaurant', [OnboardingController::class, 'storeRestaurant'])->name('onboarding.restaurants');
 
     // Restaurant Routes
-    Route::resource('restaurant', RestaurantController::class)->names("restaurant");
-    Route::resource('restaurant.menu', MenuController::class)->names("restaurant.menu");
+    Route::resource('restaurants', RestaurantController::class)->names("restaurants");
+    Route::resource('restaurants.menus', MenuController::class)->names("restaurants.menus");
 
     // Restaurant Menu Routes
     // Route::get('/restaurant/{restaurant}/menu', [RestaurantController::class, 'showMenu'])->name('restaurant.menu.edit');
     // Route::get('/restaurant/{restaurant}/menu/create', [RestaurantController::class, 'createMenu'])->name('restaurant.menu.create');
 
     // Restaurant Additional Features
-    Route::get('/restaurant/{restaurant}/reservations', [RestaurantController::class, 'showReservations'])->name('restaurant.reservations');
-    Route::get('/restaurant/{restaurant}/reports', [RestaurantController::class, 'showReports'])->name('restaurant.reports');
-    Route::get('/restaurant/{restaurant}/staff', [RestaurantController::class, 'showStaff'])->name('restaurant.staff');
+    Route::get('/restaurants/{restaurant}/dashboard', [DashboardController::class, 'showRestaurantDashboard'])
+        ->name('restaurants.dashboard');
+    Route::get('/restaurants/{restaurant}/reservations', [RestaurantController::class, 'showReservations'])->name('restaurants.reservations');
+    Route::get('/restaurants/{restaurant}/reports', [RestaurantController::class, 'showReports'])->name('restaurants.reports');
+    Route::get('/restaurants/{restaurant}/staff', [RestaurantController::class, 'showStaff'])->name('restaurants.staff');
 });
 
 require __DIR__ . '/auth.php';

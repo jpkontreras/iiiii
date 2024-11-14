@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Menu as MenuType, PageProps, Restaurant } from '@/types';
 import { Head, Link } from '@inertiajs/react';
+import { __ } from 'laravel-translator';
 import { CheckCircle, FileText, Plus, XCircle } from 'lucide-react';
 
 interface Props extends PageProps {
@@ -11,15 +12,17 @@ interface Props extends PageProps {
 export default function Index({ restaurant, menus, flash }: Props) {
   return (
     <AuthenticatedLayout>
-      <Head title={`Menus - ${restaurant.name}`} />
+      <Head title={`${__('menu.menus')} - ${restaurant.name}`} />
 
       <div className="py-12">
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900">Menus</h2>
+              <h2 className="text-2xl font-semibold text-gray-900">
+                {__('menu.menus')}
+              </h2>
               <p className="mt-1 text-sm text-gray-600">
-                Manage menus for {restaurant.name}
+                {__('menu.manage_menus_for', { restaurant: restaurant.name })}
               </p>
             </div>
             <Link
@@ -27,7 +30,7 @@ export default function Index({ restaurant, menus, flash }: Props) {
               className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-indigo-700 focus:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:bg-indigo-900"
             >
               <Plus className="mr-2 h-4 w-4" />
-              Create Menu
+              {__('menu.create')}
             </Link>
           </div>
 
@@ -42,10 +45,10 @@ export default function Index({ restaurant, menus, flash }: Props) {
               <div className="py-12 text-center">
                 <FileText className="mx-auto h-12 w-12 text-gray-400" />
                 <h3 className="mt-2 text-sm font-semibold text-gray-900">
-                  No menus
+                  {__('menu.no_menus')}
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  Get started by creating a new menu
+                  {__('menu.no_menus_description')}
                 </p>
                 <div className="mt-6">
                   <Link
@@ -53,7 +56,7 @@ export default function Index({ restaurant, menus, flash }: Props) {
                     className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                   >
                     <Plus className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
-                    Create Menu
+                    {__('menu.create')}
                   </Link>
                 </div>
               </div>
@@ -66,31 +69,31 @@ export default function Index({ restaurant, menus, flash }: Props) {
                         scope="col"
                         className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                       >
-                        Name
+                        {__('menu.name')}
                       </th>
                       <th
                         scope="col"
                         className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                       >
-                        Type
+                        {__('menu.type')}
                       </th>
                       <th
                         scope="col"
                         className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                       >
-                        Items
+                        {__('menu.items')}
                       </th>
                       <th
                         scope="col"
                         className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                       >
-                        Status
+                        {__('menu.status')}
                       </th>
                       <th
                         scope="col"
                         className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                       >
-                        Actions
+                        {__('menu.actions')}
                       </th>
                     </tr>
                   </thead>
@@ -109,22 +112,23 @@ export default function Index({ restaurant, menus, flash }: Props) {
                         </td>
                         <td className="whitespace-nowrap px-6 py-4">
                           <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium capitalize text-blue-800">
-                            {menu.template_type}
+                            {__(`menu.${menu.template_type}`)}
                           </span>
                         </td>
                         <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                          {menu.menuItems?.length || 0} items
+                          {menu.menuItems?.length || 0}{' '}
+                          {__('menu.items').toLowerCase()}
                         </td>
                         <td className="whitespace-nowrap px-6 py-4">
                           {menu.is_active ? (
                             <span className="inline-flex items-center text-green-600">
                               <CheckCircle className="mr-1.5 h-5 w-5" />
-                              Active
+                              {__('menu.active')}
                             </span>
                           ) : (
                             <span className="inline-flex items-center text-gray-500">
                               <XCircle className="mr-1.5 h-5 w-5" />
-                              Inactive
+                              {__('menu.inactive')}
                             </span>
                           )}
                         </td>
@@ -136,7 +140,7 @@ export default function Index({ restaurant, menus, flash }: Props) {
                             ])}
                             className="mr-4 text-indigo-600 hover:text-indigo-900"
                           >
-                            View
+                            {__('menu.view')}
                           </Link>
                           <Link
                             href={route('restaurants.menus.edit', [
@@ -145,7 +149,7 @@ export default function Index({ restaurant, menus, flash }: Props) {
                             ])}
                             className="text-indigo-600 hover:text-indigo-900"
                           >
-                            Edit
+                            {__('menu.edit')}
                           </Link>
                         </td>
                       </tr>

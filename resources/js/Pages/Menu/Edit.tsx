@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { MenuItem, Menu as MenuType, PageProps, Restaurant } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
+import { __ } from 'laravel-translator';
 import { FileUp, Plus, Trash2 } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 
@@ -96,7 +97,7 @@ export default function Edit({ restaurant, menu }: Props) {
 
   return (
     <AuthenticatedLayout>
-      <Head title={`Edit ${menu.name}`} />
+      <Head title={`${__('menu.edit')} - ${menu.name}`} />
 
       <div className="py-12">
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -104,16 +105,16 @@ export default function Edit({ restaurant, menu }: Props) {
             <div className="p-6">
               <div className="mb-6">
                 <h2 className="text-2xl font-semibold text-gray-900">
-                  Edit Menu
+                  {__('menu.edit')}
                 </h2>
                 <p className="mt-1 text-sm text-gray-600">
-                  Update menu details and items
+                  {__('menu.manage_menus_for', { restaurant: restaurant.name })}
                 </p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <InputLabel htmlFor="name" value="Menu Name" />
+                  <InputLabel htmlFor="name" value={__('menu.name')} />
                   <TextInput
                     id="name"
                     type="text"
@@ -128,7 +129,7 @@ export default function Edit({ restaurant, menu }: Props) {
                 <div>
                   <InputLabel
                     htmlFor="description"
-                    value="Description (Optional)"
+                    value={__('menu.description_optional')}
                   />
                   <textarea
                     id="description"
@@ -141,7 +142,10 @@ export default function Edit({ restaurant, menu }: Props) {
                 </div>
 
                 <div>
-                  <InputLabel htmlFor="template_type" value="Template Type" />
+                  <InputLabel
+                    htmlFor="template_type"
+                    value={__('menu.template_type')}
+                  />
                   <select
                     id="template_type"
                     value={data.template_type}
@@ -153,8 +157,8 @@ export default function Edit({ restaurant, menu }: Props) {
                       )
                     }
                   >
-                    <option value="custom">Custom</option>
-                    <option value="predefined">Predefined</option>
+                    <option value="custom">{__('menu.custom')}</option>
+                    <option value="predefined">{__('menu.predefined')}</option>
                   </select>
                   <InputError message={errors.template_type} className="mt-2" />
                 </div>
@@ -170,7 +174,7 @@ export default function Edit({ restaurant, menu }: Props) {
                     />
                     <InputLabel
                       htmlFor="is_active"
-                      value="Active"
+                      value={__('menu.is_active')}
                       className="ml-2"
                     />
                   </div>
@@ -180,7 +184,7 @@ export default function Edit({ restaurant, menu }: Props) {
                 <div className="border-t border-gray-200 pt-6">
                   <div className="mb-4 flex items-center justify-between">
                     <h3 className="text-lg font-medium text-gray-900">
-                      Menu Items
+                      {__('menu.menu_items')}
                     </h3>
                     <Button
                       type="button"
@@ -188,7 +192,7 @@ export default function Edit({ restaurant, menu }: Props) {
                       variant="outline"
                     >
                       <Plus className="mr-2 h-4 w-4" />
-                      Add Item
+                      {__('menu.add_item')}
                     </Button>
                   </div>
 
@@ -200,7 +204,7 @@ export default function Edit({ restaurant, menu }: Props) {
                       >
                         <div className="mb-4 flex items-start justify-between">
                           <h4 className="text-sm font-medium text-gray-900">
-                            Item #{index + 1}
+                            {__('menu.item_number', { number: index + 1 })}
                           </h4>
                           <Button
                             type="button"
@@ -216,7 +220,7 @@ export default function Edit({ restaurant, menu }: Props) {
                           <div>
                             <InputLabel
                               htmlFor={`item-name-${index}`}
-                              value="Name"
+                              value={__('menu.name')}
                             />
                             <TextInput
                               id={`item-name-${index}`}
@@ -233,7 +237,7 @@ export default function Edit({ restaurant, menu }: Props) {
                           <div>
                             <InputLabel
                               htmlFor={`item-price-${index}`}
-                              value="Price"
+                              value={__('menu.price')}
                             />
                             <TextInput
                               id={`item-price-${index}`}
@@ -256,7 +260,7 @@ export default function Edit({ restaurant, menu }: Props) {
                           <div className="md:col-span-2">
                             <InputLabel
                               htmlFor={`item-description-${index}`}
-                              value="Description (Optional)"
+                              value={__('menu.description_optional')}
                             />
                             <textarea
                               id={`item-description-${index}`}
@@ -285,7 +289,7 @@ export default function Edit({ restaurant, menu }: Props) {
                             />
                             <InputLabel
                               htmlFor={`item-available-${index}`}
-                              value="Available"
+                              value={__('menu.available')}
                               className="ml-2"
                             />
                           </div>
@@ -297,7 +301,7 @@ export default function Edit({ restaurant, menu }: Props) {
 
                 <div className="border-t border-gray-200 pt-6">
                   <h3 className="mb-4 text-lg font-medium text-gray-900">
-                    Import Additional Items
+                    {__('menu.import_additional')}
                   </h3>
 
                   <div
@@ -317,7 +321,7 @@ export default function Edit({ restaurant, menu }: Props) {
                         htmlFor="file-upload"
                         className="cursor-pointer text-indigo-600 hover:text-indigo-500"
                       >
-                        Upload a file
+                        {__('menu.upload_file')}
                       </label>
                       <input
                         id="file-upload"
@@ -326,10 +330,10 @@ export default function Edit({ restaurant, menu }: Props) {
                         accept=".jpg,.jpeg,.png,.pdf,.xlsx,.xls,.csv"
                       />
                       <p className="mt-1 text-xs text-gray-500">
-                        or drag and drop
+                        {__('menu.drag_drop')}
                       </p>
                       <p className="mt-1 text-xs text-gray-500">
-                        Supported formats: Images, PDF, Excel, CSV
+                        {__('menu.supported_formats')}
                       </p>
                     </div>
                   </div>
@@ -337,7 +341,7 @@ export default function Edit({ restaurant, menu }: Props) {
 
                 <div className="flex justify-end">
                   <Button type="submit" disabled={processing} className="ml-4">
-                    Save Changes
+                    {__('menu.save_changes')}
                   </Button>
                 </div>
               </form>

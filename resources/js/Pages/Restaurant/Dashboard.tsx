@@ -65,7 +65,7 @@ export default function Dashboard({ restaurant }: Props) {
                 </p>
               </div>
               <Link
-                href={route('restaurant.menu.create', {
+                href={route('restaurants.menus.create', {
                   restaurant: restaurant.id,
                 })}
                 className="rounded-md bg-yellow-500 px-4 py-2 text-sm font-medium text-white hover:bg-yellow-600"
@@ -260,7 +260,7 @@ export default function Dashboard({ restaurant }: Props) {
                 <CardContent className="grid gap-4">
                   <div className="grid grid-cols-2 gap-4">
                     <Link
-                      // href={route('restaurant.menu.edit', {
+                      // href={route('restaurants.menus.edit', {
                       //   restaurant: restaurant.id,
                       // })}
                       className="block"
@@ -275,7 +275,7 @@ export default function Dashboard({ restaurant }: Props) {
                       </Card>
                     </Link>
                     <Link
-                      href={route('restaurant.reservations', {
+                      href={route('restaurants.reservations', {
                         restaurant: restaurant.id,
                       })}
                       className="block"
@@ -290,7 +290,7 @@ export default function Dashboard({ restaurant }: Props) {
                       </Card>
                     </Link>
                     <Link
-                      href={route('restaurant.reports', {
+                      href={route('restaurants.reports', {
                         restaurant: restaurant.id,
                       })}
                       className="block"
@@ -305,7 +305,7 @@ export default function Dashboard({ restaurant }: Props) {
                       </Card>
                     </Link>
                     <Link
-                      href={route('restaurant.staff', {
+                      href={route('restaurants.staff', {
                         restaurant: restaurant.id,
                       })}
                       className="block"
@@ -373,7 +373,7 @@ export default function Dashboard({ restaurant }: Props) {
                     <p>{__('dashboard.empty_states.menu')}</p>
                     <Button variant="outline" className="mt-4" asChild>
                       <Link
-                        href={route('restaurant.menu.create', {
+                        href={route('restaurants.menus.create', {
                           restaurant: restaurant.id,
                         })}
                       >

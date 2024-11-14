@@ -8,7 +8,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import Authenticated from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { __ } from 'laravel-translator';
 
@@ -25,7 +24,7 @@ export default function OnboardingIndex() {
   };
 
   return (
-    <Authenticated showNavbar={false}>
+    <>
       <Head title={__('onboarding.welcome')} />
 
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -97,6 +96,6 @@ export default function OnboardingIndex() {
           </Card>
         </form>
       </div>
-    </Authenticated>
+    </>
   );
 }

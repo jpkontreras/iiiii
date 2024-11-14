@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { formatPrice } from '@/lib/utils';
 import { MenuItem, Menu as MenuType, PageProps, Restaurant } from '@/types';
 import { Head, Link } from '@inertiajs/react';
+import { __ } from 'laravel-translator';
 import { CheckCircle, Edit, FileText, XCircle } from 'lucide-react';
 
 interface Props extends PageProps {
@@ -15,7 +16,7 @@ export default function Show({ restaurant, menu, flash }: Props) {
   const itemsByCategory =
     menu.menuItems?.reduce(
       (acc, item) => {
-        const categoryName = item.category?.name || 'Uncategorized';
+        const categoryName = item.category?.name || __('menu.uncategorized');
         if (!acc[categoryName]) {
           acc[categoryName] = [];
         }
@@ -27,7 +28,7 @@ export default function Show({ restaurant, menu, flash }: Props) {
 
   return (
     <AuthenticatedLayout>
-      <Head title={`${menu.name} - Menu Details`} />
+      <Head title={`${menu.name} - ${__('menu.menu')}`} />
 
       <div className="py-12">
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -52,9 +53,9 @@ export default function Show({ restaurant, menu, flash }: Props) {
                   className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-700 shadow-sm transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25"
                 >
                   <Edit className="mr-2 h-4 w-4" />
-                  Edit Menu
+                  {__('menu.edit')}
                 </Link>
-                <Button variant="outline">Preview Menu</Button>
+                <Button variant="outline">{__('menu.preview_menu')}</Button>
               </div>
             </div>
 
@@ -66,17 +67,17 @@ export default function Show({ restaurant, menu, flash }: Props) {
                     : 'bg-purple-100 text-purple-800'
                 }`}
               >
-                {menu.template_type}
+                {__(`menu.${menu.template_type}`)}
               </span>
               {menu.is_active ? (
                 <span className="inline-flex items-center text-green-600">
                   <CheckCircle className="mr-1.5 h-4 w-4" />
-                  Active
+                  {__('menu.active')}
                 </span>
               ) : (
                 <span className="inline-flex items-center text-gray-500">
                   <XCircle className="mr-1.5 h-4 w-4" />
-                  Inactive
+                  {__('menu.inactive')}
                 </span>
               )}
             </div>
@@ -100,10 +101,10 @@ export default function Show({ restaurant, menu, flash }: Props) {
                 <div className="py-12 text-center">
                   <FileText className="mx-auto h-12 w-12 text-gray-400" />
                   <h3 className="mt-2 text-sm font-semibold text-gray-900">
-                    No menu items
+                    {__('menu.no_items')}
                   </h3>
                   <p className="mt-1 text-sm text-gray-500">
-                    Get started by adding items to your menu
+                    {__('menu.no_items_description')}
                   </p>
                   <div className="mt-6">
                     <Link
@@ -113,7 +114,7 @@ export default function Show({ restaurant, menu, flash }: Props) {
                       ])}
                       className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >
-                      Add Items
+                      {__('menu.add_item')}
                     </Link>
                   </div>
                 </div>
@@ -167,7 +168,7 @@ export default function Show({ restaurant, menu, flash }: Props) {
                             {!item.is_available && (
                               <div className="absolute right-2 top-2">
                                 <span className="inline-flex items-center rounded bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">
-                                  Unavailable
+                                  {__('menu.unavailable')}
                                 </span>
                               </div>
                             )}

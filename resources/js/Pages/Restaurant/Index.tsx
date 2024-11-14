@@ -1,5 +1,6 @@
 import Authenticated from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
+import { __ } from 'laravel-translator';
 
 interface Restaurant {
   id: number;
@@ -14,7 +15,7 @@ interface Props {
 export default function Index({ restaurants }: Props) {
   return (
     <>
-      <Head title="Restaurants" />
+      <Head title={__('restaurant.title')} />
       <Authenticated>
         <div className="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
           <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
@@ -31,20 +32,20 @@ export default function Index({ restaurants }: Props) {
                     </p>
                     <div className="mt-4 flex gap-4">
                       <Link
-                        href={route('restaurant.show', {
+                        href={route('restaurants.show', {
                           restaurant: restaurant.id,
                         })}
                         className="text-blue-600 hover:text-blue-800"
                       >
-                        View Details
+                        {__('restaurant.view_details')}
                       </Link>
                       <Link
-                        href={route('restaurant.dashboard', {
+                        href={route('restaurants.dashboard', {
                           restaurant: restaurant.id,
                         })}
                         className="text-green-600 hover:text-green-800"
                       >
-                        Go to Dashboard
+                        {__('restaurant.go_to_dashboard')}
                       </Link>
                     </div>
                   </div>

@@ -21,17 +21,17 @@ final class DashboardController extends Controller
 
     // If user has no restaurants, redirect to restaurant creation
     if ($restaurants->isEmpty()) {
-      return redirect()->route('restaurant.create');
+      return redirect()->route('restaurants.create');
     }
 
     // If user has exactly one restaurant, redirect to that restaurant's dashboard
     if ($restaurants->count() === 1) {
       $restaurant = $restaurants->first();
-      return redirect()->route('restaurant.dashboard', ['restaurant' => $restaurant->id]);
+      return redirect()->route('restaurants.dashboard', ['restaurant' => $restaurant->id]);
     }
 
     // If user has multiple restaurants, redirect to restaurant index
-    return redirect()->route('restaurant.index');
+    return redirect()->route('restaurants.index');
   }
 
   public function showRestaurantDashboard(Restaurant $restaurant): Response

@@ -10,7 +10,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import Authenticated from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { __ } from 'laravel-translator';
 import { Building2 } from 'lucide-react';
@@ -24,11 +23,11 @@ export default function Restaurant() {
 
   const handleSubmit: FormEventHandler = (e) => {
     e.preventDefault();
-    post(route('onboarding.restaurant'));
+    post(route('onboarding.restaurants'));
   };
 
   return (
-    <Authenticated showNavbar={false}>
+    <>
       <Head title={__('onboarding.steps.restaurant_info')} />
 
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -111,6 +110,6 @@ export default function Restaurant() {
           </Card>
         </form>
       </div>
-    </Authenticated>
+    </>
   );
 }

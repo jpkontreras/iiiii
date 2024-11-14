@@ -1,4 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
+import { __ } from 'laravel-translator';
 
 interface Restaurant {
   id: number;
@@ -26,12 +27,12 @@ export default function Show({ restaurant }: Props) {
                 {restaurant.name}
               </h1>
               <Link
-                href={route('restaurant.dashboard', {
+                href={route('restaurants.dashboard', {
                   restaurant: restaurant.id,
                 })}
                 className="rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500"
               >
-                Go to Dashboard
+                {__('restaurant.go_to_dashboard')}
               </Link>
             </div>
           </div>
@@ -43,7 +44,7 @@ export default function Show({ restaurant }: Props) {
                 <div className="space-y-4">
                   <div>
                     <h2 className="text-lg font-medium text-gray-900">
-                      Description
+                      {__('restaurant.description')}
                     </h2>
                     <p className="mt-1 text-gray-600">
                       {restaurant.description}
@@ -51,21 +52,27 @@ export default function Show({ restaurant }: Props) {
                   </div>
                   <div>
                     <h2 className="text-lg font-medium text-gray-900">
-                      Contact Information
+                      {__('restaurant.contact_information')}
                     </h2>
                     <div className="mt-1 space-y-2 text-gray-600">
-                      <p>Address: {restaurant.address}</p>
-                      <p>Phone: {restaurant.phone}</p>
-                      <p>Email: {restaurant.email}</p>
+                      <p>
+                        {__('restaurant.address')}: {restaurant.address}
+                      </p>
+                      <p>
+                        {__('restaurant.phone')}: {restaurant.phone}
+                      </p>
+                      <p>
+                        {__('restaurant.email')}: {restaurant.email}
+                      </p>
                     </div>
                   </div>
                 </div>
                 <div className="mt-6">
                   <Link
-                    href={route('restaurant.index')}
+                    href={route('restaurants.index')}
                     className="text-sm text-gray-600 hover:text-gray-900"
                   >
-                    ← Back to Restaurants
+                    {__('restaurant.back_to_restaurants')}
                   </Link>
                 </div>
               </div>
