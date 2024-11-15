@@ -44,12 +44,14 @@ return [
   'digital_display_description' => 'Menú dinámico para pantallas digitales y quioscos',
 
   // Import
-  'import_title' => 'Importación Rápida de tu Menú',
+  'import_title' => 'Importación Rápida de tu Menú (Opcional)',
   'import_description' => 'Ahorra tiempo importando tu menú existente desde imágenes, PDFs o hojas de cálculo. Nuestra IA extraerá y organizará automáticamente los elementos de tu menú.',
   'import_additional' => 'Importar Elementos Adicionales',
   'upload_file' => 'Subir archivo',
   'drag_drop' => 'o arrastra y suelta',
   'supported_formats' => 'Formatos soportados: Imágenes, PDF, Excel, CSV',
+  'max_files_allowed' => 'Máximo :count archivos permitidos',
+  'upload_optional_message' => 'La carga de archivos es opcional - siempre puedes agregar y gestionar los elementos de tu menú manualmente usando nuestra interfaz de formulario fácil de usar.',
 
   // Messages
   'no_menus' => 'No hay menús',

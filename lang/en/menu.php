@@ -44,12 +44,14 @@ return [
   'digital_display_description' => 'Dynamic menu for digital screens and kiosks',
 
   // Import
-  'import_title' => 'Quick Import Your Menu',
+  'import_title' => 'Quick Import Your Menu (Optional)',
   'import_description' => 'Save time by importing your existing menu from images, PDFs, or spreadsheets. Our AI will automatically extract and organize your menu items.',
   'import_additional' => 'Import Additional Items',
   'upload_file' => 'Upload a file',
   'drag_drop' => 'or drag and drop',
   'supported_formats' => 'Supported formats: Images, PDF, Excel, CSV',
+  'max_files_allowed' => 'Maximum :count files allowed',
+  'upload_optional_message' => 'File upload is optional - you can always add and manage your menu items manually using our easy-to-use form interface.',
 
   // Messages
   'no_menus' => 'No menus',
