@@ -58,4 +58,6 @@ return [
   'no_menus_description' => 'Get started by creating a new menu',
   'no_items_description' => 'Get started by adding items to your menu',
   'manage_menus_for' => 'Manage menus for :restaurant',
+  'created_processing' => 'Menu created successfully. Files and items are being processed.',
+  'creation_failed' => 'Failed to create menu: :error',
 ];

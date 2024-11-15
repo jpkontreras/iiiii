@@ -13,6 +13,8 @@ use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\DB;
+use App\Jobs\ProcessMenuFiles;
+use App\Jobs\ProcessMenuItems;
 
 final class MenuController extends Controller
 {
@@ -41,72 +43,25 @@ final class MenuController extends Controller
 
   public function store(StoreMenuRequest $request, Restaurant $restaurant): RedirectResponse
   {
-    try {
-      DB::beginTransaction();
 
-      // Create the menu
-      $menu = $restaurant->menus()->create([
-        'name' => $request->input('name'),
-        'description' => $request->input('description'),
-        'template_type' => $request->input('template_type'),
-        'is_active' => $request->boolean('is_active', true),
-      ]);
+    $menu = $restaurant->menus()->create([
+      'name' => $request->input('name'),
+      'description' => $request->input('description'),
+      'template_type' => $request->input('template_type'),
+      'is_active' => $request->boolean('is_active', true),
+    ]);
 
-      // Process uploaded files if any
-      if ($request->hasFile('files')) {
-        $importErrors = [];
-        foreach ($request->file('files') as $file) {
-          try {
-            $this->menuImportService->processFile($menu, $file);
-          } catch (\Exception $e) {
-            $importErrors[] = "Error processing {$file->getClientOriginalName()}: {$e->getMessage()}";
-          }
-        }
-
-        if (!empty($importErrors)) {
-          DB::commit();
-          return redirect()
-            ->route('restaurants.menus.show', [
-              'restaurant' => $restaurant->id,
-              'menu' => $menu->id,
-            ])
-            ->with('warning', 'Menu created but some files failed to import: ' . implode(', ', $importErrors));
-        }
-      }
-
-      // Handle manually entered menu items if any
-      if ($request->has('items')) {
-        foreach ($request->input('items') as $itemData) {
-          $item = $menu->menuItems()->create([
-            'name' => $itemData['name'],
-            'description' => $itemData['description'] ?? null,
-            'price' => $itemData['price'],
-            'category_id' => $itemData['category_id'] ?? null,
-            'is_available' => $itemData['is_available'] ?? true,
-          ]);
-
-          // Attach tags if any
-          if (isset($itemData['tags']) && is_array($itemData['tags'])) {
-            $item->tags()->attach($itemData['tags']);
-          }
-        }
-      }
-
-      DB::commit();
-
-      return redirect()
-        ->route('restaurants.menus.show', [
-          'restaurant' => $restaurant->id,
-          'menu' => $menu->id,
-        ])
-        ->with('success', 'Menu created successfully.');
-    } catch (\Exception $e) {
-      DB::rollBack();
-
-      return redirect()
-        ->route('restaurants.menus.index', $restaurant->id)
-        ->with('error', 'Failed to create menu: ' . $e->getMessage());
+    // Dispatch jobs for processing files and items
+    if ($request->hasFile('files')) {
+      ProcessMenuFiles::dispatch($menu, $request->file('files'));
     }
+
+    return redirect()
+      ->route('restaurants.menus.show', [
+        'restaurant' => $restaurant->id,
+        'menu' => $menu->id,
+      ])
+      ->with('success', __('menu.created_processing'));
   }
 
   public function show(Restaurant $restaurant, Menu $menu): Response
