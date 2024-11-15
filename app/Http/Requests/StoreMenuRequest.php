@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 final class StoreMenuRequest extends FormRequest
 {
@@ -16,7 +17,14 @@ final class StoreMenuRequest extends FormRequest
   public function rules(): array
   {
     return [
-      'name' => 'required|string|max:255',
+      'name' => [
+        'required',
+        'string',
+        'max:255',
+        Rule::unique('menus')->where(function ($query) {
+          return $query->where('restaurant_id', $this->route('restaurant')->id);
+        })
+      ],
       'description' => 'nullable|string',
       'template_type' => 'required|in:standard,qr_code,digital_display',
       'is_active' => 'boolean',
@@ -41,6 +49,7 @@ final class StoreMenuRequest extends FormRequest
   public function messages(): array
   {
     return [
+      'name.unique' => 'A menu with this name already exists in this restaurant.',
       'files.*.mimes' => 'Only JPG, PNG, PDF, Excel, and CSV files are allowed.',
       'files.*.max' => 'Each file must not exceed 10MB.',
       'items.*.name.required' => 'Each menu item must have a name.',

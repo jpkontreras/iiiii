@@ -24,6 +24,9 @@ return new class extends Migration
       $table->string('logo_path')->nullable();
       $table->foreignId('user_id')->constrained()->onDelete('cascade');
       $table->timestamps();
+
+      // Add unique constraint for name within each user's restaurants
+      $table->unique(['user_id', 'name']);
     });
 
     // Menus table
@@ -35,6 +38,9 @@ return new class extends Migration
       $table->string('template_type')->nullable();
       $table->boolean('is_active')->default(true);
       $table->timestamps();
+
+      // Add unique constraint for name within each restaurant
+      $table->unique(['restaurant_id', 'name']);
     });
 
     // Categories table

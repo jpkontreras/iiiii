@@ -14,7 +14,6 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\DB;
 use App\Jobs\ProcessMenuFiles;
-use App\Jobs\ProcessMenuItems;
 
 final class MenuController extends Controller
 {

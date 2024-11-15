@@ -84,12 +84,20 @@ export default function Create({ restaurant }: Props) {
       <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
         <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
           <form onSubmit={handleSubmit} className="p-6">
+            <div className="mb-6 text-sm text-gray-500">
+              <span className="text-red-500">*</span> {__('common.required_fields')}
+            </div>
+
             <div className="flex flex-col gap-6 lg:flex-row">
               {/* Left Column - 2/6 width */}
               <div className="lg:w-2/6">
                 <div className="space-y-6">
                   <div>
-                    <InputLabel htmlFor="name" value={__('menu.name')} />
+                    <InputLabel 
+                      htmlFor="name" 
+                      value={__('menu.name')}
+                      required
+                    />
                     <TextInput
                       id="name"
                       type="text"
@@ -98,7 +106,15 @@ export default function Create({ restaurant }: Props) {
                       onChange={(e) => setData('name', e.target.value)}
                       required
                     />
-                    <InputError message={errors.name} className="mt-2" />
+                    <InputError 
+                      message={errors.name} 
+                      className="mt-2" 
+                    />
+                    {errors.name && errors.name.includes('already been taken') && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {__('menu.name_already_exists')}
+                      </p>
+                    )}
                   </div>
 
                   <div>

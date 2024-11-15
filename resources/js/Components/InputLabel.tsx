@@ -4,8 +4,24 @@ export default function InputLabel({
     value,
     className = '',
     children,
+    required = false,
     ...props
-}: LabelHTMLAttributes<HTMLLabelElement> & { value?: string }) {
+}: LabelHTMLAttributes<HTMLLabelElement> & { 
+    value?: string | React.ReactNode;
+    required?: boolean;
+}) {
+    const renderContent = () => {
+        const content = value || children;
+        if (required) {
+            return (
+                <>
+                    {content} <span className="text-red-500">*</span>
+                </>
+            );
+        }
+        return content;
+    };
+
     return (
         <label
             {...props}
@@ -14,7 +30,7 @@ export default function InputLabel({
                 className
             }
         >
-            {value ? value : children}
+            {renderContent()}
         </label>
     );
 }

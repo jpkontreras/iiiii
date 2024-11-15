@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreRestaurantRequest;
 use App\Models\Restaurant;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -41,12 +42,10 @@ final class OnboardingController extends Controller
         return Inertia::render('Onboarding/Restaurant');
     }
 
-    public function storeRestaurant(Request $request)
+    public function storeRestaurant(StoreRestaurantRequest $request)
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['required', 'string', 'max:1000'],
-        ]);
+        $validated = $request->validated();
+
 
         $restaurant = new Restaurant();
         $restaurant->name = $validated['name'];
