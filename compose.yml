@@ -70,13 +70,16 @@ services:
       retries: 3
       timeout: 5s
   redis:
-    image: 'redis:alpine'
+    #image: 'redis:alpine'
+    image: 'docker.dragonflydb.io/dragonflydb/dragonfly'
     ports:
       - '${FORWARD_REDIS_PORT:-6379}:6379'
     volumes:
       - 'sail-redis:/data'
     networks:
       - sail
+    ulimits:
+      memlock: -1
     healthcheck:
       test:
         - CMD

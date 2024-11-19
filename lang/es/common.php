@@ -2,7 +2,7 @@
 
 return [
   // General
-  'required_fields' => 'Campos obligatorios',
+  'required_fields' => 'Los campos marcados con * son obligatorios',
   'optional' => 'Opcional',
   'save' => 'Guardar',
   'cancel' => 'Cancelar',

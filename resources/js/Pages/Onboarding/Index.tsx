@@ -1,3 +1,4 @@
+import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -29,13 +30,9 @@ export default function OnboardingIndex() {
 
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
         <form onSubmit={handleContinue}>
-          <Card className="w-full max-w-2xl">
+          <Card className="w-full max-w-2xl border-none shadow-none">
             <div className="mt-4 flex justify-center md:-mt-24">
-              <img
-                src="/images/icon2.png"
-                alt="IRMA Logo"
-                className="w-72 rounded-3xl p-5"
-              />
+              <ApplicationLogo className="w-72 rounded-3xl p-5" />
             </div>
 
             <CardHeader>

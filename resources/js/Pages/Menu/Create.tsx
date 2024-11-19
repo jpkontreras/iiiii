@@ -1,14 +1,16 @@
 import { FileUploader, FileWithPreview } from '@/Components/FileUploader';
 import { Header } from '@/Components/Header';
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import TextInput from '@/Components/TextInput';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, Restaurant } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { __ } from 'laravel-translator';
-import { FormEvent, useState } from 'react';
+import { FormEvent } from 'react';
 
 interface Props extends PageProps {
   restaurant: Restaurant;
@@ -21,51 +23,46 @@ interface FormData {
   description: string;
   template_type: TemplateType;
   is_active: boolean;
-  file: File | null;
+  files: FileWithPreview[];
 }
 
 export default function Create({ restaurant }: Props) {
-  const [uploadedFiles, setUploadedFiles] = useState<FileWithPreview[]>([]);
-
   const { data, setData, post, processing, errors } = useForm<FormData>({
     name: '',
     description: '',
     template_type: 'standard',
     is_active: true,
-    file: null,
+    files: [],
   });
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
     const formData = new FormData();
-    (Object.keys(data) as Array<keyof FormData>).forEach((key) => {
-      const value = data[key];
-      if (value !== null) {
-        formData.append(key, value as string | Blob);
-      }
-    });
+    formData.append('name', data.name);
+    formData.append('description', data.description);
+    formData.append('template_type', data.template_type);
+    formData.append('is_active', data.is_active.toString());
 
-    uploadedFiles.forEach((file, index) => {
-      formData.append(`files[${index}]`, file);
-    });
+    // Append multiple files
+    if (data.files.length > 0) {
+      data.files.forEach((file, index) => {
+        formData.append(`files[${index}]`, file);
+      });
+    }
 
     post(route('restaurants.menus.store', restaurant.id));
   };
 
   const handleFilesAdded = (files: FileWithPreview[]) => {
-    setUploadedFiles((prev) => [...prev, ...files]);
+    setData('files', [...data.files, ...files]);
   };
 
   const handleFileRemoved = (index: number) => {
-    setUploadedFiles((prev) => {
-      const newFiles = [...prev];
-      const removed = newFiles.splice(index, 1)[0];
-      if (removed.preview) {
-        URL.revokeObjectURL(removed.preview);
-      }
-      return newFiles;
-    });
+    setData(
+      'files',
+      data.files.filter((_, i) => i !== index),
+    );
   };
 
   return (
@@ -82,103 +79,98 @@ export default function Create({ restaurant }: Props) {
       <Head title={__('menu.create')} />
 
       <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
-        <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-          <form onSubmit={handleSubmit} className="p-6">
-            <div className="mb-6 text-sm text-gray-500">
-              <span className="text-red-500">*</span> {__('common.required_fields')}
-            </div>
-
-            <div className="flex flex-col gap-6 lg:flex-row">
-              {/* Left Column - 2/6 width */}
-              <div className="lg:w-2/6">
-                <div className="space-y-6">
-                  <div>
-                    <InputLabel 
-                      htmlFor="name" 
-                      value={__('menu.name')}
-                      required
-                    />
-                    <TextInput
-                      id="name"
-                      type="text"
-                      value={data.name}
-                      className="mt-1 block w-full"
-                      onChange={(e) => setData('name', e.target.value)}
-                      required
-                    />
-                    <InputError 
-                      message={errors.name} 
-                      className="mt-2" 
-                    />
-                    {errors.name && errors.name.includes('already been taken') && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {__('menu.name_already_exists')}
-                      </p>
-                    )}
+        <Card>
+          <form onSubmit={handleSubmit}>
+            <CardContent>
+              <div className="flex flex-col gap-6 py-6 lg:flex-row">
+                {/* Left Column - 2/6 width */}
+                <div className="lg:w-2/6">
+                  <div className="mb-6 text-sm text-gray-500">
+                    {__('common.required_fields')}
                   </div>
-
-                  <div>
-                    <InputLabel
-                      htmlFor="description"
-                      value={__('menu.description_optional')}
-                    />
-                    <textarea
-                      id="description"
-                      value={data.description}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                      onChange={(e) => setData('description', e.target.value)}
-                      rows={6}
-                    />
-                    <InputError message={errors.description} className="mt-2" />
-                  </div>
-                  <div>
-                    <div className="flex items-center">
-                      <input
-                        id="is_active"
-                        type="checkbox"
-                        className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-                        checked={data.is_active}
-                        onChange={(e) => setData('is_active', e.target.checked)}
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-1">
+                        {__('menu.name')}
+                        <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        value={data.name}
+                        onChange={(e) => setData('name', e.target.value)}
+                        className={errors.name ? 'border-red-500' : ''}
                       />
-                      <InputLabel
-                        htmlFor="is_active"
-                        value={__('menu.is_active')}
-                        className="ml-2"
+                      {errors.name && (
+                        <p className="text-sm text-red-500">{errors.name}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>{__('menu.description_optional')}</Label>
+                      <Textarea
+                        value={data.description}
+                        onChange={(e) => setData('description', e.target.value)}
+                        rows={6}
+                        className={errors.description ? 'border-red-500' : ''}
+                      />
+                      {errors.description && (
+                        <p className="text-sm text-red-500">
+                          {errors.description}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <Label>{__('menu.is_active')}</Label>
+                        <p className="text-sm text-gray-500">
+                          {__('menu.is_active_description')}
+                        </p>
+                      </div>
+                      <Switch
+                        checked={data.is_active}
+                        onCheckedChange={(checked) =>
+                          setData('is_active', checked)
+                        }
                       />
                     </div>
-                    <InputError message={errors.is_active} className="mt-2" />
                   </div>
                 </div>
-              </div>
 
-              {/* Right Column - 4/6 width */}
-              <div className="lg:w-4/6">
-                <FileUploader
-                  files={uploadedFiles}
-                  onFilesAdded={handleFilesAdded}
-                  onFileRemoved={handleFileRemoved}
-                  maxFiles={10}
-                  maxSize={10 * 1024 * 1024} // 10MB
-                  accept={[
-                    '.jpg',
-                    '.jpeg',
-                    '.png',
-                    '.pdf',
-                    '.xlsx',
-                    '.xls',
-                    '.csv',
-                  ]}
-                />
+                {/* Right Column - 4/6 width */}
+                <div className="lg:w-4/6">
+                  <FileUploader
+                    files={data.files}
+                    onFilesAdded={handleFilesAdded}
+                    onFileRemoved={handleFileRemoved}
+                    maxFiles={10}
+                    maxSize={10 * 1024 * 1024} // 10MB
+                    accept={[
+                      '.jpg',
+                      '.jpeg',
+                      '.png',
+                      '.pdf',
+                      '.xlsx',
+                      '.xls',
+                      '.csv',
+                    ]}
+                    title={__('menu.import_title')}
+                    description={__('menu.import_description')}
+                    optional={__('menu.upload_optional_message')}
+                  />
+                  {errors.files && (
+                    <p className="mt-2 text-sm text-red-500">{errors.files}</p>
+                  )}
+                </div>
               </div>
-            </div>
+            </CardContent>
 
-            <div className="mt-6 flex justify-end">
-              <Button type="submit" disabled={processing} className="ml-4">
+            <CardFooter className="flex justify-end">
+              <Button type="submit" disabled={processing}>
                 {__('menu.create')}
               </Button>
-            </div>
+            </CardFooter>
           </form>
-        </div>
+        </Card>
       </div>
     </AuthenticatedLayout>
   );

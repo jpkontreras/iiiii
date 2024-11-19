@@ -14,6 +14,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\DB;
 use App\Jobs\ProcessMenuFiles;
+use Illuminate\Support\Facades\Storage;
 
 final class MenuController extends Controller
 {
@@ -50,10 +51,18 @@ final class MenuController extends Controller
       'is_active' => $request->boolean('is_active', true),
     ]);
 
+    $path =  'images-' . $menu->id;
+
     // Dispatch jobs for processing files and items
     if ($request->hasFile('files')) {
-      ProcessMenuFiles::dispatch($menu, $request->file('files'));
+      foreach ($request->file('files') as $file) {
+        $file->store($path);
+      }
+
+      ProcessMenuFiles::dispatch($menu, $path);
     }
+
+
 
     return redirect()
       ->route('restaurants.menus.show', [
