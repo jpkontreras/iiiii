@@ -8,7 +8,6 @@ use App\Http\Requests\StoreMenuRequest;
 use App\Http\Requests\UpdateMenuRequest;
 use App\Models\Menu;
 use App\Models\Restaurant;
-use App\Services\MenuImportService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -18,9 +17,7 @@ use Illuminate\Support\Facades\Storage;
 
 final class MenuController extends Controller
 {
-  public function __construct(
-    private readonly MenuImportService $menuImportService
-  ) {}
+
 
   public function index(Restaurant $restaurant): Response
   {
@@ -51,7 +48,7 @@ final class MenuController extends Controller
       'is_active' => $request->boolean('is_active', true),
     ]);
 
-    $path =  'images-' . $menu->id;
+    $path =  'files-' . $menu->id;
 
     // Dispatch jobs for processing files and items
     if ($request->hasFile('files')) {
@@ -96,113 +93,7 @@ final class MenuController extends Controller
     ]);
   }
 
-  public function update(UpdateMenuRequest $request, Restaurant $restaurant, Menu $menu): RedirectResponse
-  {
-    try {
-      DB::beginTransaction();
+  public function update(UpdateMenuRequest $request, Restaurant $restaurant, Menu $menu): RedirectResponse {}
 
-      $menu->update([
-        'name' => $request->input('name'),
-        'description' => $request->input('description'),
-        'template_type' => $request->input('template_type'),
-        'is_active' => $request->boolean('is_active'),
-      ]);
-
-      // Process new file uploads if any
-      if ($request->hasFile('files')) {
-        $importErrors = [];
-        foreach ($request->file('files') as $file) {
-          try {
-            $this->menuImportService->processFile($menu, $file);
-          } catch (\Exception $e) {
-            $importErrors[] = "Error processing {$file->getClientOriginalName()}: {$e->getMessage()}";
-          }
-        }
-
-        if (!empty($importErrors)) {
-          DB::commit();
-          return redirect()
-            ->route('restaurants.menus.show', [
-              'restaurant' => $restaurant->id,
-              'menu' => $menu->id,
-            ])
-            ->with('warning', 'Menu updated but some files failed to import: ' . implode(', ', $importErrors));
-        }
-      }
-
-      // Handle menu items updates
-      if ($request->has('items')) {
-        foreach ($request->input('items') as $itemData) {
-          if (isset($itemData['id'])) {
-            // Update existing item
-            $item = $menu->menuItems()->findOrFail($itemData['id']);
-            $item->update([
-              'name' => $itemData['name'],
-              'description' => $itemData['description'] ?? null,
-              'price' => $itemData['price'],
-              'category_id' => $itemData['category_id'] ?? null,
-              'is_available' => $itemData['is_available'] ?? true,
-            ]);
-
-            // Sync tags if provided
-            if (isset($itemData['tags'])) {
-              $item->tags()->sync($itemData['tags']);
-            }
-          } else {
-            // Create new item
-            $item = $menu->menuItems()->create([
-              'name' => $itemData['name'],
-              'description' => $itemData['description'] ?? null,
-              'price' => $itemData['price'],
-              'category_id' => $itemData['category_id'] ?? null,
-              'is_available' => $itemData['is_available'] ?? true,
-            ]);
-
-            // Attach tags if provided
-            if (isset($itemData['tags'])) {
-              $item->tags()->attach($itemData['tags']);
-            }
-          }
-        }
-      }
-
-      // Handle menu items deletion
-      if ($request->has('items_to_delete')) {
-        $menu->menuItems()->whereIn('id', $request->input('items_to_delete'))->delete();
-      }
-
-      DB::commit();
-
-      return redirect()
-        ->route('restaurants.menus.show', [
-          'restaurant' => $restaurant->id,
-          'menu' => $menu->id,
-        ])
-        ->with('success', 'Menu updated successfully.');
-    } catch (\Exception $e) {
-      DB::rollBack();
-
-      return redirect()
-        ->route('restaurants.menus.edit', [
-          'restaurant' => $restaurant->id,
-          'menu' => $menu->id,
-        ])
-        ->with('error', 'Failed to update menu: ' . $e->getMessage());
-    }
-  }
-
-  public function destroy(Restaurant $restaurant, Menu $menu): RedirectResponse
-  {
-    try {
-      $menu->delete();
-
-      return redirect()
-        ->route('restaurants.menus.index', $restaurant->id)
-        ->with('success', 'Menu deleted successfully.');
-    } catch (\Exception $e) {
-      return redirect()
-        ->route('restaurants.menus.index', $restaurant->id)
-        ->with('error', 'Failed to delete menu: ' . $e->getMessage());
-    }
-  }
+  public function destroy(Restaurant $restaurant, Menu $menu): RedirectResponse {}
 }

@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Models\Menu;
-use App\Services\MenuImportService;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Cache\Store;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -25,27 +22,35 @@ class ProcessMenuFiles implements ShouldQueue
         private readonly string $path
     ) {}
 
-    public function handle(MenuImportService $menuImportService): void
+    public function handle(): void
     {
+        $files = Storage::files($this->path);
 
+        foreach ($files as $file) {
+            try {
+                $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                Log::info('Processing menu file', [
+                    'menu_id' => $this->menu->id,
+                    'file' => $file,
+                    'extension' => $extension
+                ]);
 
-
-
-
-        Log::info('Processing menu files for {menu} with {files}', ['menu' => $this->menu->id, 'files' => Storage::files($this->path)]);
-
-        // foreach ($this->files as $file) {
-        //     try {
-        //         $menuImportService->processFile($this->menu, $file);
-        //     } catch (\Exception $e) {
-        //         $importErrors[] = "Error processing {$file->getClientOriginalName()}: {$e->getMessage()}";
-        //     }
-        // }
-
-        // if (!empty($importErrors)) {
-        //     // You might want to store these errors in the database or notify the user through other means
-        //     // For now, we'll just log them
-        //     \Log::warning('Menu file import errors for menu ' . $this->menu->id, $importErrors);
-        // }
+                match ($extension) {
+                    'pdf' => ProcessPdfMenuFile::dispatch($this->menu, $file),
+                        // Add more file type handlers here as needed
+                    default => Log::warning('Unsupported file type', [
+                        'menu_id' => $this->menu->id,
+                        'file' => $file,
+                        'extension' => $extension
+                    ])
+                };
+            } catch (\Exception $e) {
+                Log::error('Error processing menu file', [
+                    'menu_id' => $this->menu->id,
+                    'file' => $file,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
     }
 }
