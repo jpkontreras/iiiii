@@ -100,6 +100,26 @@ services:
       - '${PUSHER_METRICS_PORT:-9601}:9601'
     networks:
       - sail
+  python-ocr:
+    build:
+      context: ./python
+      dockerfile: Dockerfile
+    volumes:
+      - ./python:/app
+      - ./storage/app/private:/app/shared
+      - sail-paddle:/root/.paddleocr # Changed to use sail- prefix
+    environment:
+      - DB_CONNECTION=${DB_CONNECTION}
+      - DB_HOST=pgsql
+      - DB_PORT=${DB_PORT}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+    networks:
+      - sail
+    depends_on:
+      - pgsql
+      - laravel.test
 networks:
   sail:
     driver: bridge
@@ -109,4 +129,6 @@ volumes:
   sail-pgsql:
     driver: local
   sail-redis:
+    driver: local
+  sail-paddle: # Added new volume with sail- prefix
     driver: local

@@ -1,0 +1,5 @@
+paddlepaddle
+paddleocr>=2.6.0
+Pillow
+opencv-python-headless
+psycopg2-binary
