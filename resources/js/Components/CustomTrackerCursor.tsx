@@ -1,8 +1,3 @@
-import {
-  Tooltip,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useEffect, useRef, useState } from 'react';
 
@@ -78,50 +73,44 @@ export const CustomTrackerCursor: React.FC<CustomTrackerCursorProps> = ({
   }, [onMouseEnter, onMouseLeave, onMouseMove]);
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger>
-          <div ref={containerRef} className="absolute inset-0">
-            <AnimatePresence mode="wait">
-              {isHovering && (
-                <motion.div
-                  initial={{
-                    opacity: 0,
-                    x: entryPosition.x,
-                    y: entryPosition.y,
-                    scale: 0.8,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    x: mousePosition.x,
-                    y: mousePosition.y,
-                    scale: 1,
-                  }}
-                  exit={{
-                    opacity: 0,
-                    scale: 0.8,
-                    transition: { duration: 0.15 },
-                  }}
-                  transition={{
-                    type: 'tween',
-                    ease: [0.17, 0.67, 0.83, 0.67], // Smooth bezier curve
-                    duration: 0.15,
-                  }}
-                  className="pointer-events-none absolute"
-                  style={{
-                    transform: `translate(-50%, -50%)`,
-                    left: 0,
-                    top: 0,
-                    willChange: 'transform', // Optimization for smooth movement
-                  }}
-                >
-                  {element}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </TooltipTrigger>
-      </Tooltip>
-    </TooltipProvider>
+    <div ref={containerRef} className="absolute inset-0">
+      <AnimatePresence mode="wait">
+        {isHovering && (
+          <motion.div
+            initial={{
+              opacity: 0,
+              x: entryPosition.x,
+              y: entryPosition.y,
+              scale: 0.8,
+            }}
+            animate={{
+              opacity: 1,
+              x: mousePosition.x,
+              y: mousePosition.y,
+              scale: 1,
+            }}
+            exit={{
+              opacity: 0,
+              scale: 0.8,
+              transition: { duration: 0.15 },
+            }}
+            transition={{
+              type: 'tween',
+              ease: [0.17, 0.67, 0.83, 0.67], // Smooth bezier curve
+              duration: 0.15,
+            }}
+            className="pointer-events-none absolute"
+            style={{
+              transform: `translate(-50%, -50%)`,
+              left: 0,
+              top: 0,
+              willChange: 'transform', // Optimization for smooth movement
+            }}
+          >
+            {element}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
