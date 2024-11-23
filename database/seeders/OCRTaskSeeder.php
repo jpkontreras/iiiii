@@ -14,15 +14,13 @@ class OCRTaskSeeder extends Seeder
     public function run(): void
     {
         $paths = [
-            'foto/1.jpg',
-            'foto/2.jpg',
-            'foto/3.jpg',
-            'foto/4.jpg',
-            'foto/5.jpg',
-            'foto/6.jpg',
-            'foto/7.jpg',
-            'foto/8.jpg',
-            'foto/9.jpg',
+            'menu_dom_costa/0.jpg',
+            'menu_dom_costa/1.jpg',
+            'menu_dom_costa/2.jpg',
+            'menu_dom_costa/3.jpg',
+            'menu_dom_costa/4.jpg',
+            'menu_dom_costa/5.jpg',
+
         ];
 
         foreach ($paths as $path) {

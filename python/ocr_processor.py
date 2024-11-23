@@ -4,16 +4,18 @@ import psycopg2
 from paddleocr import PaddleOCR
 import json
 from datetime import datetime
+import cv2
+import numpy as np
+import math
 
 class DatabaseConnection:
     def __init__(self):
-        # These environment variables come from docker-compose which gets them from Laravel's .env
         self.conn = psycopg2.connect(
             dbname=os.environ['DB_DATABASE'],
             user=os.environ['DB_USERNAME'],
             password=os.environ['DB_PASSWORD'],
-            host='pgsql',  # This is fixed since it's the service name in docker-compose
-            port=os.environ.get('DB_PORT', 5432)  # Optional port from environment
+            host='pgsql',
+            port=os.environ.get('DB_PORT', 5432)
         )
 
     def __enter__(self):
@@ -26,7 +28,59 @@ class OCRProcessor:
     def __init__(self):
         self.ocr = PaddleOCR(use_angle_cls=True, lang='en', use_gpu=False)
         self.shared_folder = '/app/shared'
+        # Parameters for long image processing
+        self.height_segment = 1024  # Height of each segment
+        self.overlap = 200          # Overlap between segments
         print(f"OCR Processor initialized. Connected to database: {os.environ['DB_DATABASE']}")
+
+    def process_long_image(self, image_path):
+        """
+        Process a long image by splitting it into overlapping segments.
+        """
+        # Read the image
+        img = cv2.imread(image_path)
+        if img is None:
+            raise Exception(f"Failed to read image at {image_path}")
+            
+        img_height, img_width = img.shape[:2]
+        
+        # Calculate number of segments needed
+        num_segments = math.ceil((img_height - self.overlap) / (self.height_segment - self.overlap))
+        
+        all_results = []
+        
+        for i in range(num_segments):
+            # Calculate segment boundaries
+            start_y = i * (self.height_segment - self.overlap)
+            end_y = min(start_y + self.height_segment, img_height)
+            
+            if i == num_segments - 1:
+                # Make sure the last segment reaches the bottom
+                start_y = max(0, end_y - self.height_segment)
+            
+            # Extract segment
+            segment = img[start_y:end_y, 0:img_width]
+            
+            # Process segment
+            results = self.ocr.ocr(segment, cls=True)
+            
+            # Adjust coordinates to match original image position
+            if results and results[0]:
+                for line in results[0]:
+                    box = line[0]
+                    text = line[1][0]
+                    
+                    # Adjust y-coordinates
+                    adjusted_box = [[point[0], point[1] + start_y] for point in box]
+                    all_results.append({
+                        'text': text,
+                        'coordinates': adjusted_box
+                    })
+        
+        # Sort results by vertical position (top to bottom)
+        all_results.sort(key=lambda x: x['coordinates'][0][1])
+        
+        return all_results
 
     def get_next_task(self, conn):
         with conn.cursor() as cur:
@@ -55,19 +109,32 @@ class OCRProcessor:
     def process_image(self, image_path):
         try:
             full_path = os.path.join(self.shared_folder, image_path)
-            result = self.ocr.ocr(full_path, cls=True)
             
-            formatted_result = []
-            for line in result:
-                for word_info in line:
-                    coordinates, (text, confidence) = word_info
-                    formatted_result.append({
-                        'text': text,
-                        'confidence': float(confidence),
-                        'coordinates': coordinates
-                    })
+            # Read image to get dimensions
+            img = cv2.imread(full_path)
+            if img is None:
+                raise Exception(f"Failed to read image at {full_path}")
+                
+            height, width = img.shape[:2]
             
-            return formatted_result
+            # If image is very tall, use segmented processing
+            if height > 2 * self.height_segment:
+                result = self.process_long_image(full_path)
+            else:
+                # Use regular processing for smaller images
+                result = self.ocr.ocr(full_path, cls=True)
+                formatted_result = []
+                for line in result:
+                    for word_info in line:
+                        coordinates, (text) = word_info
+                        formatted_result.append({
+                            'text': text,
+                            'coordinates': coordinates
+                        })
+                result = formatted_result
+            
+            return result
+            
         except Exception as e:
             raise Exception(f"Error processing image: {str(e)}")
 
