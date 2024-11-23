@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RestaurantController;
@@ -37,7 +38,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Restaurant Routes
     Route::resource('restaurants', RestaurantController::class)->names("restaurants");
     Route::resource('restaurants.menus', MenuController::class)->names("restaurants.menus");
-
+    Route::resource('restaurants.menus.items', MenuItemController::class)->names("restaurants.menus.items");
     // Restaurant Menu Routes
     // Route::get('/restaurant/{restaurant}/menu', [RestaurantController::class, 'showMenu'])->name('restaurant.menu.edit');
     // Route::get('/restaurant/{restaurant}/menu/create', [RestaurantController::class, 'createMenu'])->name('restaurant.menu.create');

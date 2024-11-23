@@ -17,6 +17,7 @@ export default {
         sans: ['Figtree', ...defaultTheme.fontFamily.sans],
         montserrat: ['montserrat', ...defaultTheme.fontFamily.sans],
         prompt: ['Prompt'],
+        handwriting: ['Kalam', 'cursive'],
       },
       borderRadius: {
         lg: 'var(--radius)',

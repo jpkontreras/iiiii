@@ -40,33 +40,18 @@ final class MenuController extends Controller
 
   public function store(StoreMenuRequest $request, Restaurant $restaurant): RedirectResponse
   {
-
     $menu = $restaurant->menus()->create([
       'name' => $request->input('name'),
       'description' => $request->input('description'),
-      'template_type' => $request->input('template_type'),
       'is_active' => $request->boolean('is_active', true),
     ]);
 
-    $path =  'files-' . $menu->id;
-
-    // Dispatch jobs for processing files and items
-    if ($request->hasFile('files')) {
-      foreach ($request->file('files') as $file) {
-        $file->store($path);
-      }
-
-      ProcessMenuFiles::dispatch($menu, $path);
-    }
-
-
-
     return redirect()
-      ->route('restaurants.menus.show', [
+      ->route('restaurants.menus.items.index', [
         'restaurant' => $restaurant->id,
         'menu' => $menu->id,
       ])
-      ->with('success', __('menu.created_processing'));
+      ->with('success', __('menu.created'));
   }
 
   public function show(Restaurant $restaurant, Menu $menu): Response
@@ -93,7 +78,28 @@ final class MenuController extends Controller
     ]);
   }
 
-  public function update(UpdateMenuRequest $request, Restaurant $restaurant, Menu $menu): RedirectResponse {}
+  public function update(UpdateMenuRequest $request, Restaurant $restaurant, Menu $menu): RedirectResponse
+  {
+    $menu->update([
+      'name' => $request->input('name'),
+      'description' => $request->input('description'),
+      'is_active' => $request->boolean('is_active'),
+    ]);
 
-  public function destroy(Restaurant $restaurant, Menu $menu): RedirectResponse {}
+    return redirect()
+      ->route('restaurants.menus.items.index', [
+        'restaurant' => $restaurant->id,
+        'menu' => $menu->id,
+      ])
+      ->with('success', __('menu.updated'));
+  }
+
+  public function destroy(Restaurant $restaurant, Menu $menu): RedirectResponse
+  {
+    $menu->delete();
+
+    return redirect()
+      ->route('restaurants.menus.index', $restaurant)
+      ->with('success', __('menu.deleted'));
+  }
 }
