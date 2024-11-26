@@ -1,7 +1,7 @@
 import { Card } from '@/Components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { GripVertical, Table } from 'lucide-react';
-import { MenuItem } from '../types';
+import { MenuItem } from '../../Pages/MenuItems/types';
 import { DragDropView } from './DragDropView';
 import { LivePreview } from './LivePreview';
 import { MenuTable } from './MenuTable';

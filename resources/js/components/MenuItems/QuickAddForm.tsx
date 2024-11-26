@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
-import { CATEGORIES, MenuItem } from '../types';
+import { CATEGORIES, MenuItem } from '../../Pages/MenuItems/types';
 
 interface Props {
   onAdd: (item: Omit<MenuItem, 'id'>) => void;

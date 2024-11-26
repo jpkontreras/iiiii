@@ -1,13 +1,12 @@
 import { Header } from '@/Components/Header';
-import { MenuItemBuilder } from '@/Components/MenuItems/MenuItemBuilder';
-import { MenuPreview } from '@/Components/MenuItems/MenuPreview';
+import { MenuItemBuilder } from '@/components/MenuItems/MenuItemBuilder';
+import { MenuPreview } from '@/components/MenuItems/MenuPreview';
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Menu, MenuItem, PageProps, Restaurant } from '@/types';
 import { __ } from 'laravel-translator';
 import { useState } from 'react';
 
