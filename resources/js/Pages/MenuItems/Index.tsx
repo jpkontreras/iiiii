@@ -1,22 +1,92 @@
-import { CustomTrackerCursor } from '@/Components/CustomTrackerCursor';
 import { Header } from '@/Components/Header';
+import { MenuItemBuilder } from '@/Components/MenuItems/MenuItemBuilder';
+import { MenuPreview } from '@/Components/MenuItems/MenuPreview';
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from '@/components/ui/resizable';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Menu, PageProps, Restaurant } from '@/types';
-import { Head } from '@inertiajs/react';
-import { motion } from 'framer-motion';
+import { Menu, MenuItem, PageProps, Restaurant } from '@/types';
 import { __ } from 'laravel-translator';
+import { useState } from 'react';
 
 interface Props extends PageProps {
   restaurant: Restaurant;
   menu: Menu;
 }
 
+const defaultItems: MenuItem[] = [
+  {
+    id: 1,
+    name: 'Main Dishes',
+    isFolder: true,
+    children: [
+      {
+        id: 2,
+        name: 'Grilled Salmon',
+        description: 'Fresh salmon with herbs and lemon',
+        price: 24.99,
+        category: 'Main Dishes',
+      },
+      {
+        id: 3,
+        name: 'Beef Tenderloin',
+        description: 'Premium cut with red wine sauce',
+        price: 34.99,
+        category: 'Main Dishes',
+      },
+    ],
+  },
+  {
+    id: 4,
+    name: 'Desserts',
+    isFolder: true,
+    children: [
+      {
+        id: 5,
+        name: 'Chocolate Soufflé',
+        description: 'Warm chocolate dessert with vanilla ice cream',
+        price: 12.99,
+        category: 'Desserts',
+      },
+    ],
+  },
+];
+
 export default function Index({ restaurant, menu }: Props) {
+  const [items, setItems] = useState<MenuItem[]>(defaultItems);
+  const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
+
+  const handleItemsChange = (newItems: MenuItem[]) => {
+    setItems(newItems);
+    setSelectedItems(new Set());
+  };
+
+  // Get flat list of non-folder items for preview
+  const getFlatMenuItems = (menuItems: MenuItem[]): MenuItem[] => {
+    const flatItems = menuItems.reduce<MenuItem[]>((acc, item) => {
+      if (item.isFolder && item.children) {
+        return [...acc, ...getFlatMenuItems(item.children)];
+      }
+      if (!item.isFolder) {
+        return [...acc, item];
+      }
+      return acc;
+    }, []);
+    console.log('Flattened menu items:', flatItems);
+    return flatItems;
+  };
+
+  const handleItemClick = (itemId: number) => {
+    setSelectedItems(new Set([itemId]));
+  };
+
   return (
     <AuthenticatedLayout
       header={
         <Header
-          title={__('menu_items.title')}
+          title={`${__('menu_items.title')} - ${menu.name}`}
           subtitle={__('menu_items.subtitle', {
             menu: menu.name,
             restaurant: restaurant.name,
@@ -24,18 +94,29 @@ export default function Index({ restaurant, menu }: Props) {
         />
       }
     >
-      <Head title={`${menu.name} - ${__('menu_items.title')}`} />
-      <motion.div className="relative z-0 size-full cursor-text overflow-hidden rounded-xl border border-amber-300 bg-amber-50/65">
-        <CustomTrackerCursor
-          element={
-            <div className="z-1 relative cursor-cell rounded-3xl bg-amber-200 px-4 py-2">
-              <h5 className="text-center text-sm font-semibold">
-                {__('menu_items.add_entry')}
-              </h5>
-            </div>
-          }
-        />
-      </motion.div>
+      <div className="container">
+        <ResizablePanelGroup direction="horizontal">
+          <ResizablePanel defaultSize={50} minSize={20}>
+            <MenuItemBuilder
+              items={items}
+              onChange={handleItemsChange}
+              onSelectItem={handleItemClick}
+            />
+          </ResizablePanel>
+
+          <ResizableHandle />
+
+          <ResizablePanel defaultSize={50}>
+            <MenuPreview
+              menuName={menu.name}
+              restaurantName={restaurant.name}
+              items={getFlatMenuItems(items)}
+              selectedItems={selectedItems}
+              onItemClick={handleItemClick}
+            />
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
     </AuthenticatedLayout>
   );
 }

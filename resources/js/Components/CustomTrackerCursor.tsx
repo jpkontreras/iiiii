@@ -11,6 +11,9 @@ interface CustomTrackerCursorProps {
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
   onMouseMove?: (position: MousePosition) => void;
+  onClick?: (position: MousePosition) => void;
+  onDoubleClick?: (position: MousePosition) => void;
+  onSelect?: (selection: Selection | null) => void;
 }
 
 export const CustomTrackerCursor: React.FC<CustomTrackerCursorProps> = ({
@@ -18,6 +21,9 @@ export const CustomTrackerCursor: React.FC<CustomTrackerCursorProps> = ({
   onMouseEnter,
   onMouseLeave,
   onMouseMove,
+  onClick,
+  onDoubleClick,
+  onSelect,
 }) => {
   const [mousePosition, setMousePosition] = useState<MousePosition>({
     x: 0,
@@ -61,16 +67,52 @@ export const CustomTrackerCursor: React.FC<CustomTrackerCursorProps> = ({
       onMouseLeave?.();
     };
 
+    const handleClick = (e: MouseEvent): void => {
+      const rect = container.getBoundingClientRect();
+      const clickPos = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      };
+      onClick?.(clickPos);
+    };
+
+    const handleDoubleClick = (e: MouseEvent): void => {
+      const rect = container.getBoundingClientRect();
+      const clickPos = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      };
+      onDoubleClick?.(clickPos);
+    };
+
+    const handleSelection = (): void => {
+      const selection = window.getSelection();
+      onSelect?.(selection);
+    };
+
     container.addEventListener('mousemove', handleMouseMove);
     container.addEventListener('mouseenter', handleMouseEnter);
     container.addEventListener('mouseleave', handleMouseLeave);
+    container.addEventListener('click', handleClick);
+    container.addEventListener('dblclick', handleDoubleClick);
+    document.addEventListener('selectionchange', handleSelection);
 
     return () => {
       container.removeEventListener('mousemove', handleMouseMove);
       container.removeEventListener('mouseenter', handleMouseEnter);
       container.removeEventListener('mouseleave', handleMouseLeave);
+      container.removeEventListener('click', handleClick);
+      container.removeEventListener('dblclick', handleDoubleClick);
+      document.removeEventListener('selectionchange', handleSelection);
     };
-  }, [onMouseEnter, onMouseLeave, onMouseMove]);
+  }, [
+    onClick,
+    onDoubleClick,
+    onSelect,
+    onMouseEnter,
+    onMouseLeave,
+    onMouseMove,
+  ]);
 
   return (
     <div ref={containerRef} className="absolute inset-0">
@@ -96,7 +138,7 @@ export const CustomTrackerCursor: React.FC<CustomTrackerCursorProps> = ({
             }}
             transition={{
               type: 'tween',
-              ease: [0.17, 0.67, 0.83, 0.67], // Smooth bezier curve
+              ease: [0.17, 0.67, 0.83, 0.67],
               duration: 0.15,
             }}
             className="pointer-events-none absolute"
@@ -104,7 +146,7 @@ export const CustomTrackerCursor: React.FC<CustomTrackerCursorProps> = ({
               transform: `translate(-50%, -50%)`,
               left: 0,
               top: 0,
-              willChange: 'transform', // Optimization for smooth movement
+              willChange: 'transform',
             }}
           >
             {element}

@@ -16,4 +16,23 @@ return [
   'no_items_description' => 'Comienza agregando elementos a tu menú. Puedes agregarlos uno por uno o usar el formulario de agregado rápido a continuación.',
   'add_first_item' => 'Agregar Tu Primer Elemento',
   'add_entry' => 'Agregar Entrada',
+  'form' => [
+    'name_label' => 'Nombre',
+    'name_placeholder' => 'Nombre del elemento',
+    'price_label' => 'Precio',
+    'price_placeholder' => '0.00',
+    'description_label' => 'Descripción',
+    'description_placeholder' => 'Descripción (opcional)',
+    'add_button' => 'Agregar Elemento',
+  ],
+  'table' => [
+    'name' => 'Nombre',
+    'price' => 'Precio',
+    'description' => 'Descripción',
+    'no_items' => 'Aún no hay elementos en el menú.',
+    'pagination' => [
+      'previous' => 'Anterior',
+      'next' => 'Siguiente',
+    ],
+  ],
 ];
