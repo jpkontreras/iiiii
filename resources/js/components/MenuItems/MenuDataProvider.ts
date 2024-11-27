@@ -4,6 +4,7 @@ import { TreeDataProvider, TreeItem, TreeItemIndex } from 'react-complex-tree';
 export class MenuDataProvider implements TreeDataProvider<FlatMenuItem> {
   private items: FlatMenuItem[];
   private itemMap: Map<TreeItemIndex, TreeItem<FlatMenuItem>>;
+  private onChangeListeners: Set<() => void> = new Set();
 
   constructor(items: FlatMenuItem[]) {
     this.items = items;
@@ -11,10 +12,30 @@ export class MenuDataProvider implements TreeDataProvider<FlatMenuItem> {
     this.buildItemMap();
   }
 
-  // Add method to update items
+  // Add method to subscribe to changes
+  onDidChange(listener: () => void) {
+    this.onChangeListeners.add(listener);
+    return {
+      dispose: () => {
+        this.onChangeListeners.delete(listener);
+      },
+    };
+  }
+
+  private notifyListeners() {
+    this.onChangeListeners.forEach((listener) => listener());
+  }
+
+  async addItem(item: FlatMenuItem): Promise<void> {
+    this.items = [...this.items, item];
+    this.addItemToMap(item);
+    this.notifyListeners();
+  }
+
   updateItems(items: FlatMenuItem[]) {
     this.items = items;
     this.buildItemMap();
+    this.notifyListeners();
   }
 
   getItemMap() {
@@ -139,11 +160,5 @@ export class MenuDataProvider implements TreeDataProvider<FlatMenuItem> {
         rootItem.children = [...(rootItem.children || []), item.id.toString()];
       }
     }
-  }
-
-  // Method to add a new item without rebuilding the entire tree
-  async addItem(item: FlatMenuItem): Promise<void> {
-    this.items = [...this.items, item]; // Create new array to maintain immutability
-    this.addItemToMap(item);
   }
 }

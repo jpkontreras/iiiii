@@ -52,21 +52,24 @@ export function MenuItemBuilder({
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [addingToCategory, setAddingToCategory] = useState<number | null>(null);
+  const [version, setVersion] = useState(0);
 
-  const dataProviderRef = useRef<MenuDataProvider | null>(null);
+  const dataProviderRef = useRef<MenuDataProvider>(new MenuDataProvider(items));
   const environment = useRef<TreeEnvironmentRef<FlatMenuItem>>(null);
 
-  if (!dataProviderRef.current) {
-    dataProviderRef.current = new MenuDataProvider(items);
-  }
-
-  useEffect(() => {
-    if (dataProviderRef.current) {
-      dataProviderRef.current.updateItems(items);
-    }
-  }, [items]);
+  // Store pending actions to execute after tree update
+  const pendingActionsRef = useRef<(() => void)[]>([]);
 
   const isEditing = addingToCategory !== null;
+
+  useEffect(() => {
+    // Execute pending actions after tree update
+    if (pendingActionsRef.current.length > 0) {
+      const actions = pendingActionsRef.current;
+      pendingActionsRef.current = [];
+      actions.forEach((action) => action());
+    }
+  }, [version]);
 
   const handleQuickAdd = async (
     parentItem: FlatMenuItem,
@@ -82,11 +85,24 @@ export function MenuItemBuilder({
       category: parentItem.name,
     };
 
-    if (dataProviderRef.current) {
-      await dataProviderRef.current.addItem(newItem);
-      onChange([...items, newItem]);
-      setAddingToCategory(null);
-    }
+    await dataProviderRef.current.addItem(newItem);
+    onChange([...items, newItem]);
+    setAddingToCategory(null);
+
+    // Queue tree actions to execute after update
+    pendingActionsRef.current.push(() => {
+      if (environment.current) {
+        // First expand parent
+        setExpandedItems((prev) => {
+          if (!prev.includes(parentItem.id.toString())) {
+            return [...prev, parentItem.id.toString()];
+          }
+          return prev;
+        });
+        // Then focus new item
+        setFocusedItem(newItem.id.toString());
+      }
+    });
   };
 
   const renderItem = ({
@@ -161,6 +177,7 @@ export function MenuItemBuilder({
           <SidebarGroup>
             <SidebarGroupContent>
               <UncontrolledTreeEnvironment<FlatMenuItem>
+                key={version}
                 ref={environment}
                 canDragAndDrop
                 canDropOnFolder
