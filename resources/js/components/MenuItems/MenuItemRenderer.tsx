@@ -5,6 +5,7 @@ import {
   SidebarMenuSub,
 } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
+import { FlatMenuItem } from '@/types/menu-items';
 import {
   ChevronDown,
   ChevronRight,
@@ -12,17 +13,40 @@ import {
   PlusCircle,
   UtensilsCrossed,
 } from 'lucide-react';
-import { TreeItem, TreeItemRenderContext } from 'react-complex-tree';
+import {
+  TreeEnvironmentRef,
+  TreeItem,
+  TreeItemRenderContext,
+} from 'react-complex-tree';
 import { MenuItemContextMenu } from './MenuItemContextMenu';
 import { QuickAddForm } from './QuickAddForm';
-import { MenuItem } from './types';
 
 interface RenderItemArrowProps {
-  item: TreeItem<MenuItem>;
+  item: TreeItem<FlatMenuItem>;
   context: TreeItemRenderContext<never>;
 }
 
-export function RenderItemArrow({ item, context }: RenderItemArrowProps) {
+interface MenuItemRendererProps {
+  item: TreeItem<FlatMenuItem>;
+  depth: number;
+  context: TreeItemRenderContext<never>;
+  children: React.ReactNode;
+  addingToCategory: number | null;
+  setAddingToCategory: (id: number | null) => void;
+  handleQuickAdd: (
+    parentItem: FlatMenuItem,
+    data: { name: string; price: number },
+  ) => void;
+  environment: React.RefObject<TreeEnvironmentRef<FlatMenuItem>>;
+}
+
+interface RenderItemFolderProps {
+  item: TreeItem<FlatMenuItem>;
+  setAddingToCategory: (id: number | null) => void;
+  environment: React.RefObject<TreeEnvironmentRef<FlatMenuItem>>;
+}
+
+function RenderItemArrow({ item, context }: RenderItemArrowProps) {
   if (!item.isFolder) return null;
   return (
     <div
@@ -38,30 +62,10 @@ export function RenderItemArrow({ item, context }: RenderItemArrowProps) {
   );
 }
 
-interface MenuItemRendererProps {
-  item: TreeItem<MenuItem>;
-  depth: number;
-  context: TreeItemRenderContext<never>;
-  children: React.ReactNode;
-  addingToCategory: number | null;
-  setAddingToCategory: (id: number | null) => void;
-  handleQuickAdd: (
-    menuItem: MenuItem,
-    data: { name: string; price: number },
-  ) => void;
-}
-
-interface RenderItemProps {
-  item: TreeItem<MenuItem>;
-}
-
-interface RenderItemFolderProps extends RenderItemProps {
-  setAddingToCategory: (id: number | null) => void;
-}
-
 function RenderItemFolder({
   item,
   setAddingToCategory,
+  environment,
 }: RenderItemFolderProps) {
   return (
     <>
@@ -74,6 +78,12 @@ function RenderItemFolder({
           className="size-7 opacity-0 group-hover:opacity-100"
           onClick={(e) => {
             e.stopPropagation();
+            if (environment.current) {
+              environment.current.expandItem(
+                item.data.id.toString(),
+                'menu-tree',
+              );
+            }
             setAddingToCategory(item.data.id);
           }}
         >
@@ -84,7 +94,7 @@ function RenderItemFolder({
   );
 }
 
-function RenderItem({ item }: RenderItemProps) {
+function RenderItem({ item }: { item: TreeItem<FlatMenuItem> }) {
   return (
     <>
       <UtensilsCrossed className="size-4 shrink-0 text-muted-foreground" />
@@ -108,13 +118,9 @@ export function MenuItemRenderer({
   addingToCategory,
   setAddingToCategory,
   handleQuickAdd,
+  environment,
 }: MenuItemRendererProps) {
-  const isRoot = item.index === 'root';
-  const isSelected = context.isSelected;
-
-  if (isRoot) {
-    return <>{children}</>;
-  }
+  if (item.index === 'root') return <>{children}</>;
 
   return (
     <>
@@ -129,7 +135,7 @@ export function MenuItemRenderer({
           <SidebarMenuButton
             {...context.itemContainerWithoutChildrenProps}
             {...context.interactiveElementProps}
-            isActive={isSelected}
+            isActive={context.isSelected}
             className={cn(
               'group relative',
               context.isDraggingOver && 'bg-sidebar-accent/50',
@@ -141,12 +147,12 @@ export function MenuItemRenderer({
             size="default"
           >
             <RenderItemArrow item={item} context={context} />
-
             <div className="flex w-full items-center gap-2">
               {item.isFolder ? (
                 <RenderItemFolder
                   item={item}
                   setAddingToCategory={setAddingToCategory}
+                  environment={environment}
                 />
               ) : (
                 <RenderItem item={item} />
@@ -166,10 +172,7 @@ export function MenuItemRenderer({
           >
             <QuickAddForm
               parentId={item.data.id}
-              onSubmit={(data) => {
-                //console.log({ data });
-                handleQuickAdd(item.data, data);
-              }}
+              onSubmit={(data) => handleQuickAdd(item.data, data)}
               onCancel={() => setAddingToCategory(null)}
             />
           </div>

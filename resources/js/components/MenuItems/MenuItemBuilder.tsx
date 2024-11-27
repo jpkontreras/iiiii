@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/sidebar';
 import { FlatMenuItem } from '@/types/menu-items';
 import { FolderPlus, Search } from 'lucide-react';
-import { HTMLProps, useEffect, useMemo, useRef, useState } from 'react';
+import { HTMLProps, useEffect, useRef, useState } from 'react';
 import {
   DraggingPosition,
   Tree,
@@ -53,31 +53,40 @@ export function MenuItemBuilder({
   const [searchTerm, setSearchTerm] = useState('');
   const [addingToCategory, setAddingToCategory] = useState<number | null>(null);
 
-  const dataProvider = useMemo(() => new MenuDataProvider(items), [items]);
+  const dataProviderRef = useRef<MenuDataProvider | null>(null);
+  const environment = useRef<TreeEnvironmentRef<FlatMenuItem>>(null);
+
+  if (!dataProviderRef.current) {
+    dataProviderRef.current = new MenuDataProvider(items);
+  }
 
   useEffect(() => {
-    console.log({ dataProvider });
-  }, [dataProvider]);
+    if (dataProviderRef.current) {
+      dataProviderRef.current.updateItems(items);
+    }
+  }, [items]);
 
   const isEditing = addingToCategory !== null;
 
-  const handleQuickAdd = (
-    menuItem: FlatMenuItem,
+  const handleQuickAdd = async (
+    parentItem: FlatMenuItem,
     data: { name: string; price: number },
   ) => {
     const newItem: FlatMenuItem = {
       id: Math.max(...items.map((item) => item.id)) + 1,
       name: data.name,
-      parentId: menuItem.id,
+      parentId: parentItem.id,
       isFolder: false,
       description: '',
       price: data.price,
-      category: items.find((item) => item.id === menuItem.id)?.name,
+      category: parentItem.name,
     };
 
-    const newItems = [...items, newItem];
-    onChange(newItems);
-    setAddingToCategory(null);
+    if (dataProviderRef.current) {
+      await dataProviderRef.current.addItem(newItem);
+      onChange([...items, newItem]);
+      setAddingToCategory(null);
+    }
   };
 
   const renderItem = ({
@@ -90,19 +99,18 @@ export function MenuItemBuilder({
     depth: number;
     context: TreeItemRenderContext<never>;
     children: React.ReactNode;
-  }) => {
-    return (
-      <MenuItemRenderer
-        item={item}
-        depth={depth}
-        context={context}
-        children={children}
-        addingToCategory={addingToCategory}
-        setAddingToCategory={setAddingToCategory}
-        handleQuickAdd={handleQuickAdd}
-      />
-    );
-  };
+  }) => (
+    <MenuItemRenderer
+      item={item}
+      depth={depth}
+      context={context}
+      children={children}
+      addingToCategory={addingToCategory}
+      setAddingToCategory={setAddingToCategory}
+      handleQuickAdd={handleQuickAdd}
+      environment={environment}
+    />
+  );
 
   const renderDragBetweenLine = ({
     draggingPosition,
@@ -129,27 +137,21 @@ export function MenuItemBuilder({
     inputProps,
   }: {
     inputProps: HTMLProps<HTMLInputElement>;
-  }) => {
-    return (
-      <div className="relative px-2 py-2">
-        <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <input
-          {...inputProps}
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            if (inputProps.onChange) {
-              inputProps.onChange(e);
-            }
-          }}
-          className="h-8 w-full rounded-md border border-input bg-transparent px-8 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          placeholder="Search items..."
-        />
-      </div>
-    );
-  };
-
-  const environment = useRef<TreeEnvironmentRef<FlatMenuItem>>(null);
+  }) => (
+    <div className="relative px-2 py-2">
+      <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+      <input
+        {...inputProps}
+        value={searchTerm}
+        onChange={(e) => {
+          setSearchTerm(e.target.value);
+          inputProps.onChange?.(e);
+        }}
+        className="h-8 w-full rounded-md border border-input bg-transparent px-8 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        placeholder="Search items..."
+      />
+    </div>
+  );
 
   return (
     <div className="flex h-full flex-col">
@@ -166,7 +168,7 @@ export function MenuItemBuilder({
                 canRename
                 canSearch={!isEditing}
                 canSearchByStartingTyping={!isEditing}
-                dataProvider={dataProvider}
+                dataProvider={dataProviderRef.current}
                 getItemTitle={(item) => item.data.name}
                 viewState={{
                   ['menu-tree']: {

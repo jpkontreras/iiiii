@@ -11,7 +11,20 @@ export class MenuDataProvider implements TreeDataProvider<FlatMenuItem> {
     this.buildItemMap();
   }
 
+  // Add method to update items
+  updateItems(items: FlatMenuItem[]) {
+    this.items = items;
+    this.buildItemMap();
+  }
+
+  getItemMap() {
+    return Object.fromEntries(this.itemMap);
+  }
+
   private buildItemMap() {
+    // Clear the map before rebuilding
+    this.itemMap.clear();
+
     // First, create all tree items without children
     for (const item of this.items) {
       this.itemMap.set(item.id.toString(), {
@@ -96,5 +109,41 @@ export class MenuDataProvider implements TreeDataProvider<FlatMenuItem> {
       item.id === id ? { ...item, ...data } : item,
     );
     this.buildItemMap();
+  }
+
+  // Add method to update internal state without full rebuild
+  private addItemToMap(item: FlatMenuItem) {
+    // Create tree item for the new item
+    this.itemMap.set(item.id.toString(), {
+      index: item.id.toString(),
+      canMove: true,
+      canRename: true,
+      data: item,
+      children: [],
+      isFolder: item.isFolder,
+    });
+
+    // Update parent's children array if it exists
+    if (item.parentId !== null) {
+      const parentItem = this.itemMap.get(item.parentId.toString());
+      if (parentItem) {
+        parentItem.children = [
+          ...(parentItem.children || []),
+          item.id.toString(),
+        ];
+      }
+    } else {
+      // If it's a top-level item, add to root's children
+      const rootItem = this.itemMap.get('root');
+      if (rootItem) {
+        rootItem.children = [...(rootItem.children || []), item.id.toString()];
+      }
+    }
+  }
+
+  // Method to add a new item without rebuilding the entire tree
+  async addItem(item: FlatMenuItem): Promise<void> {
+    this.items = [...this.items, item]; // Create new array to maintain immutability
+    this.addItemToMap(item);
   }
 }
