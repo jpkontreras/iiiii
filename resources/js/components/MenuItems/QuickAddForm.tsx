@@ -1,75 +1,66 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Plus } from 'lucide-react';
-import { useState } from 'react';
-import { CATEGORIES, MenuItem } from '../../Pages/MenuItems/types';
+import { Check, X } from 'lucide-react';
+import { FormEvent, useRef, useState } from 'react';
 
-interface Props {
-  onAdd: (item: Omit<MenuItem, 'id'>) => void;
+interface QuickAddFormProps {
+  parentId?: number;
+  onSubmit: (data: { name: string; price: number }) => void;
+  onCancel: () => void;
 }
 
-export function QuickAddForm({ onAdd }: Props) {
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState('');
-  const [category, setCategory] = useState(CATEGORIES[0]);
+export function QuickAddForm({
+  parentId,
+  onSubmit,
+  onCancel,
+}: QuickAddFormProps) {
+  const [data, setData] = useState({ name: '', price: 0 });
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-
-    if (!name || !price || !category) return;
-
-    onAdd({
-      name,
-      price: parseFloat(price),
-      category,
-      description: '',
-      tags: [],
-    });
-
-    setName('');
-    setPrice('');
-    setCategory(CATEGORIES[0]);
+    if (data.name.trim()) {
+      onSubmit(data);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-4">
-      <Input
-        placeholder="Item name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        className="flex-grow"
-      />
-      <Input
-        type="number"
-        step="0.01"
-        placeholder="Price"
-        value={price}
-        onChange={(e) => setPrice(e.target.value)}
-        className="w-24"
-      />
-      <Select value={category} onValueChange={setCategory}>
-        <SelectTrigger className="w-32">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {CATEGORIES.map((category) => (
-            <SelectItem key={category} value={category}>
-              {category}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <Button type="submit">
-        <Plus className="mr-2 h-4 w-4" />
-        Add Item
-      </Button>
+    <form onSubmit={handleSubmit} className="flex w-full items-center gap-2">
+      <div className="flex flex-1 gap-2">
+        <Input
+          ref={nameInputRef}
+          value={data.name}
+          onChange={(e) => setData({ ...data, name: e.target.value })}
+          className="h-8"
+          placeholder="Item name..."
+          autoFocus
+        />
+        <Input
+          type="number"
+          value={data.price || ''}
+          onChange={(e) =>
+            setData({ ...data, price: parseFloat(e.target.value) || 0 })
+          }
+          className="h-8 w-32"
+          placeholder="Price..."
+          step="0.01"
+          min="0"
+        />
+      </div>
+      <div className="flex shrink-0 items-center gap-1">
+        <Button type="submit" variant="ghost" size="icon" className="h-8 w-8">
+          <Check className="size-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={onCancel}
+        >
+          <X className="size-4" />
+        </Button>
+      </div>
     </form>
   );
 }

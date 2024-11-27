@@ -7,78 +7,98 @@ import {
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { FlatMenuItem } from '@/types/menu-items';
 import { __ } from 'laravel-translator';
 import { useState } from 'react';
+
+interface PageProps {
+  auth: any;
+}
+
+interface Restaurant {
+  id: number;
+  name: string;
+}
+
+interface Menu {
+  id: number;
+  name: string;
+}
 
 interface Props extends PageProps {
   restaurant: Restaurant;
   menu: Menu;
 }
 
-const defaultItems: MenuItem[] = [
+const defaultItems: FlatMenuItem[] = [
   {
     id: 1,
     name: 'Main Dishes',
+    parentId: null,
     isFolder: true,
-    children: [
-      {
-        id: 2,
-        name: 'Grilled Salmon',
-        description: 'Fresh salmon with herbs and lemon',
-        price: 24.99,
-        category: 'Main Dishes',
-      },
-      {
-        id: 3,
-        name: 'Beef Tenderloin',
-        description: 'Premium cut with red wine sauce',
-        price: 34.99,
-        category: 'Main Dishes',
-      },
-    ],
+  },
+  {
+    id: 2,
+    name: 'Grilled Salmon',
+    parentId: 1,
+    isFolder: false,
+    description: 'Fresh salmon with herbs and lemon',
+    price: 24.99,
+    category: 'Main Dishes',
+  },
+  {
+    id: 3,
+    name: 'Beef Tenderloin',
+    parentId: 1,
+    isFolder: false,
+    description: 'Premium cut with red wine sauce',
+    price: 34.99,
+    category: 'Main Dishes',
   },
   {
     id: 4,
     name: 'Desserts',
+    parentId: null,
     isFolder: true,
-    children: [
-      {
-        id: 5,
-        name: 'Chocolate Soufflé',
-        description: 'Warm chocolate dessert with vanilla ice cream',
-        price: 12.99,
-        category: 'Desserts',
-      },
-    ],
+  },
+  {
+    id: 5,
+    name: 'Chocolate Soufflé',
+    parentId: 4,
+    isFolder: false,
+    description: 'Warm chocolate dessert with vanilla ice cream',
+    price: 12.99,
+    category: 'Desserts',
   },
 ];
 
 export default function Index({ restaurant, menu }: Props) {
-  const [items, setItems] = useState<MenuItem[]>(defaultItems);
+  const [items, setItems] = useState<FlatMenuItem[]>(defaultItems);
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
 
-  const handleItemsChange = (newItems: MenuItem[]) => {
+  const handleItemsChange = (newItems: FlatMenuItem[]) => {
     setItems(newItems);
-    setSelectedItems(new Set());
   };
 
-  // Get flat list of non-folder items for preview
-  const getFlatMenuItems = (menuItems: MenuItem[]): MenuItem[] => {
-    const flatItems = menuItems.reduce<MenuItem[]>((acc, item) => {
-      if (item.isFolder && item.children) {
-        return [...acc, ...getFlatMenuItems(item.children)];
+  const handleSelectItem = (itemId: number) => {
+    setSelectedItems((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
       }
-      if (!item.isFolder) {
-        return [...acc, item];
-      }
-      return acc;
-    }, []);
-    console.log('Flattened menu items:', flatItems);
-    return flatItems;
+      return newSet;
+    });
   };
 
   const handleItemClick = (itemId: number) => {
-    setSelectedItems(new Set([itemId]));
+    handleSelectItem(itemId);
+  };
+
+  // Updated to work with flat structure
+  const getFlatMenuItems = (menuItems: FlatMenuItem[]): FlatMenuItem[] => {
+    return menuItems.filter((item) => !item.isFolder);
   };
 
   return (
@@ -99,7 +119,7 @@ export default function Index({ restaurant, menu }: Props) {
             <MenuItemBuilder
               items={items}
               onChange={handleItemsChange}
-              onSelectItem={handleItemClick}
+              onSelectItem={handleSelectItem}
             />
           </ResizablePanel>
 

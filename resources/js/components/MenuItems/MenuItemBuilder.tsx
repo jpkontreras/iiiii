@@ -1,216 +1,38 @@
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuSub,
 } from '@/components/ui/sidebar';
-import { MenuItem } from '@/types';
+import { FlatMenuItem } from '@/types/menu-items';
+import { FolderPlus, Search } from 'lucide-react';
+import { HTMLProps, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Check,
-  ChevronDown,
-  ChevronRight,
-  FolderIcon,
-  FolderPlus,
-  PlusCircle,
-  UtensilsCrossed,
-  X,
-} from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Disposable,
+  DraggingPosition,
   Tree,
-  TreeDataProvider,
+  TreeEnvironmentRef,
   TreeItem,
   TreeItemIndex,
   TreeItemRenderContext,
   UncontrolledTreeEnvironment,
 } from 'react-complex-tree';
-import { MenuItemContextMenu } from './MenuItemContextMenu';
-import { MenuItemDialog } from './MenuItemDialog';
+import { MenuDataProvider } from './MenuDataProvider';
+import { MenuItemRenderer } from './MenuItemRenderer';
 
 interface MenuItemBuilderProps {
-  items: MenuItem[];
-  onChange: (items: MenuItem[]) => void;
+  items: FlatMenuItem[];
+  onChange: (items: FlatMenuItem[]) => void;
   onSelectItem?: (itemId: number) => void;
 }
 
-const convertToTreeData = (items: MenuItem[]) => {
-  const treeItems: Record<string, TreeItem<MenuItem>> = {
-    root: {
-      index: 'root',
-      canMove: false,
-      isFolder: true,
-      children: items.map((item) => item.id.toString()),
-      data: { id: 0, name: 'Root', description: '', price: 0, isFolder: true },
-      canRename: false,
-    },
-  };
-
-  const processItem = (item: MenuItem) => {
-    treeItems[item.id.toString()] = {
-      index: item.id.toString(),
-      canMove: true,
-      isFolder: !!item.isFolder,
-      children: item.children?.map((child) => child.id.toString()),
-      data: item,
-      canRename: true,
-    };
-
-    if (item.children) {
-      item.children.forEach(processItem);
-    }
-  };
-
-  items.forEach(processItem);
-  return { items: treeItems };
-};
-
-const getAllItemIds = (items: MenuItem[]): string[] => {
-  const ids: string[] = [];
-
-  const processItem = (item: MenuItem) => {
-    ids.push(item.id.toString());
-    if (item.children) {
-      item.children.forEach(processItem);
-    }
-  };
-
-  items.forEach(processItem);
-  return ids;
-};
-
-interface InlineEditFormProps {
-  item: MenuItem;
-  onSave: (data: { name: string; price: number }) => void;
-  onCancel: () => void;
-}
-
-function InlineEditForm({ item, onSave, onCancel }: InlineEditFormProps) {
-  const [data, setData] = useState({ name: item.name, price: item.price || 0 });
-  const nameInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    nameInputRef.current?.focus();
-  }, []);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (data.name.trim()) {
-      onSave(data);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-2 py-1">
-      <div className="flex items-center gap-1">
-        <Input
-          ref={nameInputRef}
-          value={data.name}
-          onChange={(e) => setData({ ...data, name: e.target.value })}
-          className="h-7 text-sm"
-          placeholder="Item name..."
-        />
-        {!item.isFolder && (
-          <Input
-            type="number"
-            value={data.price || ''}
-            onChange={(e) =>
-              setData({ ...data, price: parseFloat(e.target.value) || 0 })
-            }
-            className="h-7 w-24 text-sm"
-            placeholder="Price..."
-            step="0.01"
-            min="0"
-          />
-        )}
-      </div>
-      <div className="flex justify-end gap-1">
-        <button type="submit" className="p-1 hover:text-primary">
-          <Check className="size-4" />
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="p-1 hover:text-destructive"
-        >
-          <X className="size-4" />
-        </button>
-      </div>
-    </form>
-  );
-}
-
-class MenuDataProvider implements TreeDataProvider<MenuItem> {
-  private treeChangeListeners: ((changedItemIds: TreeItemIndex[]) => void)[] =
-    [];
-  private data: Record<TreeItemIndex, TreeItem<MenuItem>>;
-
-  constructor(items: MenuItem[]) {
-    this.data = convertToTreeData(items).items;
-  }
-
-  public async getTreeItem(itemId: TreeItemIndex) {
-    return this.data[itemId];
-  }
-
-  public async onChangeItemChildren(
-    itemId: TreeItemIndex,
-    newChildren: TreeItemIndex[],
-  ) {
-    this.data[itemId].children = newChildren;
-    this.treeChangeListeners.forEach((listener) => listener([itemId]));
-  }
-
-  public onDidChangeTreeData(
-    listener: (changedItemIds: TreeItemIndex[]) => void,
-  ): Disposable {
-    this.treeChangeListeners.push(listener);
-    return {
-      dispose: () => {
-        this.treeChangeListeners.splice(
-          this.treeChangeListeners.indexOf(listener),
-          1,
-        );
-      },
-    };
-  }
-
-  public injectItem(parentId: TreeItemIndex, newItem: MenuItem) {
-    const itemId = newItem.id.toString();
-    this.data[itemId] = {
-      index: itemId,
-      canMove: true,
-      isFolder: !!newItem.isFolder,
-      children: newItem.children?.map((child) => child.id.toString()),
-      data: newItem,
-      canRename: true,
-    };
-
-    if (parentId) {
-      this.data[parentId].children = [
-        ...(this.data[parentId].children || []),
-        itemId,
-      ];
-      this.treeChangeListeners.forEach((listener) => listener([parentId]));
-    }
-  }
-}
-
-interface MenuItemToolbarProps {
-  onAddCategory: () => void;
-}
-
-function MenuItemToolbar({ onAddCategory }: MenuItemToolbarProps) {
+function MenuItemToolbar() {
   return (
     <div className="flex items-center gap-2 border-b p-2">
       <Button
         variant="ghost"
         size="sm"
-        onClick={onAddCategory}
+        onClick={() => {}}
         className="flex items-center gap-2"
       >
         <FolderPlus className="size-4" />
@@ -225,441 +47,131 @@ export function MenuItemBuilder({
   onChange,
   onSelectItem,
 }: MenuItemBuilderProps) {
-  const [dialog, setDialog] = useState<{
-    open: boolean;
-    type: 'category' | 'item';
-    item?: MenuItem;
-    parentId?: number;
-  }>({ open: false, type: 'item' });
-  const [addingToCategory, setAddingToCategory] = useState<number | null>(null);
-  const [searchEnabled, setSearchEnabled] = useState(true);
   const [expandedItems, setExpandedItems] = useState<string[]>(['root']);
-  const [treeKey, setTreeKey] = useState(0);
-  const [editingItemId, setEditingItemId] = useState<number | null>(null);
   const [focusedItem, setFocusedItem] = useState<string | null>(null);
-  const [localItems, setLocalItems] = useState<MenuItem[]>(items);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [addingToCategory, setAddingToCategory] = useState<number | null>(null);
 
-  // Update local items when props change
+  const dataProvider = useMemo(() => new MenuDataProvider(items), [items]);
+
   useEffect(() => {
-    setLocalItems(items);
-  }, [items]);
+    console.log({ dataProvider });
+  }, [dataProvider]);
 
-  const dataProvider = useMemo(
-    () => new MenuDataProvider(localItems),
-    [localItems],
-  );
+  const isEditing = addingToCategory !== null;
 
-  const getMaxId = (items: MenuItem[]): number => {
-    let maxId = 0;
-    const processItem = (item: MenuItem) => {
-      maxId = Math.max(maxId, item.id);
-      if (item.children) {
-        item.children.forEach(processItem);
-      }
-    };
-    items.forEach(processItem);
-    return maxId;
-  };
-
-  const updateItems = (newItems: MenuItem[]) => {
-    setLocalItems(newItems);
-    onChange(newItems);
-    setTreeKey((prev) => prev + 1);
-  };
-
-  const handleAddCategory = () => {
-    const newItem: MenuItem = {
-      id: getMaxId(localItems) + 1,
-      name: 'New Category',
+  const handleQuickAdd = (
+    menuItem: FlatMenuItem,
+    data: { name: string; price: number },
+  ) => {
+    const newItem: FlatMenuItem = {
+      id: Math.max(...items.map((item) => item.id)) + 1,
+      name: data.name,
+      parentId: menuItem.id,
+      isFolder: false,
       description: '',
-      price: 0,
-      isFolder: true,
-      children: [],
+      price: data.price,
+      category: items.find((item) => item.id === menuItem.id)?.name,
     };
 
-    setDialog({
-      open: true,
-      type: 'category',
-      item: newItem,
-    });
-
-    updateItems([...localItems, newItem]);
+    const newItems = [...items, newItem];
+    onChange(newItems);
+    setAddingToCategory(null);
   };
-
-  const handleDrop = useCallback(
-    (draggedItems: TreeItem<MenuItem>[], target: any) => {
-      const processItems = (currentItems: MenuItem[]): MenuItem[] => {
-        // Remove dragged items from their original positions
-        const draggedIds = new Set(draggedItems.map((item) => item.data.id));
-        const itemsWithoutDragged = currentItems.filter(
-          (item) => !draggedIds.has(item.id),
-        );
-
-        // If dropping at root level
-        if (target.targetType === 'root') {
-          return [
-            ...itemsWithoutDragged,
-            ...draggedItems.map((item) => item.data),
-          ];
-        }
-
-        // If dropping into a folder
-        if (
-          target.targetType === 'item-folder' ||
-          target.targetType === 'folder'
-        ) {
-          return itemsWithoutDragged.map((item) => {
-            if (item.id.toString() === target.targetItem.toString()) {
-              return {
-                ...item,
-                children: [
-                  ...(item.children || []),
-                  ...draggedItems.map((draggedItem) => draggedItem.data),
-                ],
-              };
-            }
-            return item;
-          });
-        }
-
-        // If dropping between items
-        if (target.targetType === 'between-items') {
-          const parentId = target.parentItem;
-          return itemsWithoutDragged.map((item) => {
-            if (item.id.toString() === parentId.toString()) {
-              const newChildren = [...(item.children || [])];
-              newChildren.splice(
-                target.childIndex,
-                0,
-                ...draggedItems.map((draggedItem) => draggedItem.data),
-              );
-              return { ...item, children: newChildren };
-            }
-            return item;
-          });
-        }
-
-        return itemsWithoutDragged;
-      };
-
-      const newItems = processItems(localItems);
-      updateItems(newItems);
-    },
-    [localItems, updateItems],
-  );
 
   const renderItem = ({
     item,
-    title,
-    arrow,
     depth,
     context,
     children,
   }: {
-    item: TreeItem<MenuItem>;
-    title: React.ReactNode;
-    arrow: React.ReactNode;
+    item: TreeItem<FlatMenuItem>;
     depth: number;
     context: TreeItemRenderContext<never>;
     children: React.ReactNode;
   }) => {
-    const isCategory = item.isFolder;
-    const menuItem = item.data;
-    const isRoot = item.index === 'root';
-    const isAdding = addingToCategory === menuItem.id;
-    const isEditing = editingItemId === menuItem.id;
-    const isSelected = focusedItem === item.index.toString();
-
-    if (isRoot) {
-      return <>{children}</>;
-    }
-
-    const itemContent = isEditing ? (
-      <div
-        className="relative flex w-full items-center"
-        style={{ paddingLeft: `${depth * 12 + 4}px` }}
-      >
-        {arrow}
-        <InlineEditForm
-          item={menuItem}
-          onSave={(data) => handleQuickEdit(menuItem.id, data)}
-          onCancel={() => {
-            setEditingItemId(null);
-            setSearchEnabled(true);
-          }}
-        />
-      </div>
-    ) : (
-      <div
-        {...context.itemContainerWithoutChildrenProps}
-        {...context.interactiveElementProps}
-        className={`group relative flex h-8 w-full items-center gap-2 rounded-md px-2 hover:bg-sidebar-accent ${
-          isSelected ? 'bg-sidebar-accent' : ''
-        } ${context.isDraggingOver ? 'bg-sidebar-accent/50' : ''}`}
-        style={{ paddingLeft: `${depth * 12 + 4}px` }}
-        onDoubleClick={(e) => {
-          e.stopPropagation();
-          setEditingItemId(menuItem.id);
-          setSearchEnabled(false);
-        }}
-      >
-        {arrow}
-        {isCategory ? (
-          <>
-            <FolderIcon className="size-4 shrink-0 text-muted-foreground" />
-            <span className="flex-1 truncate text-sm">{title}</span>
-            <div className="invisible group-hover:visible">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setAddingToCategory(menuItem.id);
-                  setSearchEnabled(false);
-                }}
-                className="h-6 px-2"
-              >
-                <PlusCircle className="size-3" />
-              </Button>
-            </div>
-          </>
-        ) : (
-          <>
-            <UtensilsCrossed className="size-4 shrink-0 text-muted-foreground" />
-            <span className="flex-1 truncate">{menuItem.name}</span>
-            {menuItem.price > 0 && (
-              <span className="shrink-0 text-sm text-muted-foreground">
-                ${menuItem.price.toFixed(2)}
-              </span>
-            )}
-          </>
-        )}
-      </div>
+    return (
+      <MenuItemRenderer
+        item={item}
+        depth={depth}
+        context={context}
+        children={children}
+        addingToCategory={addingToCategory}
+        setAddingToCategory={setAddingToCategory}
+        handleQuickAdd={handleQuickAdd}
+      />
     );
+  };
+
+  const renderDragBetweenLine = ({
+    draggingPosition,
+    lineProps,
+  }: {
+    draggingPosition: DraggingPosition;
+    lineProps: HTMLProps<HTMLDivElement>;
+  }) => {
+    const position = draggingPosition as { targetIndex?: number };
+    if (typeof position.targetIndex !== 'number') return null;
 
     return (
-      <SidebarMenuItem {...context.itemContainerWithChildrenProps}>
-        <MenuItemContextMenu
-          isCategory={isCategory}
-          onEdit={() => handleEdit(menuItem)}
-          onDelete={() => handleDelete(menuItem.id)}
-          onMoveUp={() => handleMove(menuItem.id, 'up')}
-          onMoveDown={() => handleMove(menuItem.id, 'down')}
-        >
-          {itemContent}
-        </MenuItemContextMenu>
-        {isCategory && (
-          <SidebarMenuSub>
-            {isAdding && (
-              <div style={{ paddingLeft: `${(depth + 1) * 12 + 4}px` }}>
-                <InlineEditForm
-                  item={menuItem}
-                  onSave={(data) => handleQuickAdd(menuItem.id, data)}
-                  onCancel={() => {
-                    setAddingToCategory(null);
-                    setSearchEnabled(true);
-                  }}
-                />
-              </div>
-            )}
-            {children}
-          </SidebarMenuSub>
-        )}
-      </SidebarMenuItem>
+      <div
+        {...lineProps}
+        className="absolute left-0 right-0 h-0.5 bg-primary"
+        style={{
+          transform: `translateY(${position.targetIndex * 32}px)`,
+        }}
+      />
     );
   };
 
-  const handleEdit = (item: MenuItem) => {
-    setDialog({
-      open: true,
-      type: item.isFolder ? 'category' : 'item',
-      item,
-    });
-  };
-
-  const handleDelete = (itemId: number) => {
-    const deleteItem = (items: MenuItem[]): MenuItem[] => {
-      return items.filter((item) => {
-        if (item.id === itemId) return false;
-        if (item.children) {
-          item.children = deleteItem(item.children);
-        }
-        return true;
-      });
-    };
-
-    updateItems(deleteItem(localItems));
-  };
-
-  const handleMove = (itemId: number, direction: 'up' | 'down') => {
-    const moveItem = (items: MenuItem[]): MenuItem[] => {
-      const index = items.findIndex((item) => item.id === itemId);
-      if (index === -1) {
-        return items.map((item) => {
-          if (item.children) {
-            return { ...item, children: moveItem(item.children) };
-          }
-          return item;
-        });
-      }
-
-      if (
-        (direction === 'up' && index === 0) ||
-        (direction === 'down' && index === items.length - 1)
-      ) {
-        return items;
-      }
-
-      const newItems = [...items];
-      const swapIndex = direction === 'up' ? index - 1 : index + 1;
-      [newItems[index], newItems[swapIndex]] = [
-        newItems[swapIndex],
-        newItems[index],
-      ];
-
-      return newItems;
-    };
-
-    updateItems(moveItem(localItems));
-  };
-
-  const handleQuickEdit = (
-    itemId: number,
-    data: { name: string; price: number },
-  ) => {
-    const updateItem = (items: MenuItem[]): MenuItem[] => {
-      return items.map((item) => {
-        if (item.id === itemId) {
-          return {
-            ...item,
-            name: data.name,
-            price: item.isFolder ? item.price : data.price,
-          };
-        }
-        if (item.children) {
-          return { ...item, children: updateItem(item.children) };
-        }
-        return item;
-      });
-    };
-
-    updateItems(updateItem(localItems));
-    setEditingItemId(null);
-    setSearchEnabled(true);
-  };
-
-  const handleSave = (data: Partial<MenuItem>) => {
-    const parentId = dialog.parentId;
-    const isEditing = !!dialog.item;
-
-    if (isEditing) {
-      const updateItem = (items: MenuItem[]): MenuItem[] => {
-        return items.map((item) => {
-          if (item.id === dialog.item?.id) {
-            return {
-              ...item,
-              ...data,
-              isFolder: item.isFolder,
-              children: item.children,
-            };
-          }
-          if (item.children) {
-            return { ...item, children: updateItem(item.children) };
-          }
-          return item;
-        });
-      };
-
-      updateItems(updateItem(localItems));
-    } else {
-      const newItem: MenuItem = {
-        id: getMaxId(localItems) + 1,
-        name: data.name || '',
-        description: data.description || '',
-        price: data.price || 0,
-        isFolder: dialog.type === 'category',
-        children: dialog.type === 'category' ? [] : undefined,
-        category:
-          dialog.type === 'category'
-            ? undefined
-            : localItems.find((i) => i.id === parentId)?.name,
-      };
-
-      if (parentId) {
-        const addToParent = (items: MenuItem[]): MenuItem[] => {
-          return items.map((item) => {
-            if (item.id === parentId) {
-              return {
-                ...item,
-                children: [...(item.children || []), newItem],
-              };
+  const renderSearchInput = ({
+    inputProps,
+  }: {
+    inputProps: HTMLProps<HTMLInputElement>;
+  }) => {
+    return (
+      <div className="relative px-2 py-2">
+        <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <input
+          {...inputProps}
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            if (inputProps.onChange) {
+              inputProps.onChange(e);
             }
-            if (item.children) {
-              return { ...item, children: addToParent(item.children) };
-            }
-            return item;
-          });
-        };
-
-        updateItems(addToParent(localItems));
-      } else {
-        updateItems([...localItems, newItem]);
-      }
-    }
-
-    setDialog({ open: false, type: 'item' });
+          }}
+          className="h-8 w-full rounded-md border border-input bg-transparent px-8 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          placeholder="Search items..."
+        />
+      </div>
+    );
   };
 
-  const handleQuickAdd = (
-    categoryId: number,
-    data: { name: string; price: number },
-  ) => {
-    const parentCategory = localItems.find((i) => i.id === categoryId);
-    const newItem: MenuItem = {
-      id: getMaxId(localItems) + 1,
-      name: data.name,
-      description: '',
-      price: data.price,
-      category: parentCategory?.name,
-    };
-
-    const addToParent = (items: MenuItem[]): MenuItem[] => {
-      return items.map((item) => {
-        if (item.id === categoryId) {
-          return {
-            ...item,
-            children: [...(item.children || []), newItem],
-          };
-        }
-        if (item.children) {
-          return { ...item, children: addToParent(item.children) };
-        }
-        return item;
-      });
-    };
-
-    updateItems(addToParent(localItems));
-    setAddingToCategory(null);
-    setSearchEnabled(true);
-  };
+  const environment = useRef<TreeEnvironmentRef<FlatMenuItem>>(null);
 
   return (
     <div className="flex h-full flex-col">
-      <MenuItemToolbar onAddCategory={handleAddCategory} />
+      <MenuItemToolbar />
       <div className="flex-1">
-        <SidebarContent className="h-full">
+        <SidebarContent>
           <SidebarGroup>
             <SidebarGroupContent>
-              <UncontrolledTreeEnvironment<MenuItem>
+              <UncontrolledTreeEnvironment<FlatMenuItem>
+                ref={environment}
                 canDragAndDrop
                 canDropOnFolder
                 canReorderItems
+                canRename
+                canSearch={!isEditing}
+                canSearchByStartingTyping={!isEditing}
                 dataProvider={dataProvider}
                 getItemTitle={(item) => item.data.name}
                 viewState={{
                   ['menu-tree']: {
                     expandedItems,
-                    selectedItems: focusedItem ? [focusedItem] : [],
+                    selectedItems,
                     focusedItem: focusedItem as TreeItemIndex | undefined,
                   },
                 }}
@@ -675,28 +187,18 @@ export function MenuItemBuilder({
                   setFocusedItem(item.toString());
                 }}
                 onSelectItems={(items) => {
+                  setSelectedItems(items as string[]);
                   const selectedId = parseInt(items[0].toString());
                   if (!isNaN(selectedId) && onSelectItem) {
                     onSelectItem(selectedId);
                   }
                 }}
-                onDrop={handleDrop}
-                renderItemArrow={({ item, context }) =>
-                  item.isFolder ? (
-                    <span {...context.arrowProps} className="mr-1">
-                      {context.isExpanded ? (
-                        <ChevronDown className="size-3" />
-                      ) : (
-                        <ChevronRight className="size-3" />
-                      )}
-                    </span>
-                  ) : null
-                }
                 renderItem={renderItem}
+                renderDragBetweenLine={renderDragBetweenLine}
+                renderSearchInput={renderSearchInput}
                 renderTreeContainer={({ children, containerProps }) => (
                   <SidebarMenu {...containerProps}>{children}</SidebarMenu>
                 )}
-                canSearch={searchEnabled}
               >
                 <Tree
                   treeId="menu-tree"
@@ -708,13 +210,6 @@ export function MenuItemBuilder({
           </SidebarGroup>
         </SidebarContent>
       </div>
-      <MenuItemDialog
-        open={dialog.open}
-        onClose={() => setDialog({ open: false, type: 'item' })}
-        onSave={handleSave}
-        item={dialog.item}
-        isCategory={dialog.type === 'category'}
-      />
     </div>
   );
 }

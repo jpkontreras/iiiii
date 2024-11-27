@@ -11,29 +11,31 @@ interface MenuPreviewProps {
   onItemClick: (itemId: number) => void;
 }
 
+const groupItemsByCategory = (
+  items: MenuItem[],
+): Record<string, MenuItem[]> => {
+  const grouped: Record<string, MenuItem[]> = {};
+
+  //console.log({ items });
+
+  items.forEach((item) => {
+    if (!item.category) return;
+
+    if (!grouped[item.category]) {
+      grouped[item.category] = [];
+    }
+    grouped[item.category].push(item);
+  });
+
+  return grouped;
+};
+
 export function MenuPreview({
   menuName,
   restaurantName,
   items,
   selectedItems,
 }: MenuPreviewProps) {
-  const groupItemsByCategory = (
-    items: MenuItem[],
-  ): Record<string, MenuItem[]> => {
-    const grouped: Record<string, MenuItem[]> = {};
-
-    items.forEach((item) => {
-      if (!item.category) return;
-
-      if (!grouped[item.category]) {
-        grouped[item.category] = [];
-      }
-      grouped[item.category].push(item);
-    });
-
-    return grouped;
-  };
-
   const groupedItems = useMemo(() => groupItemsByCategory(items), [items]);
   const hasCategories = Object.keys(groupedItems).length > 0;
 
