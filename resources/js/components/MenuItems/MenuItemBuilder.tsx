@@ -5,6 +5,7 @@ import {
   SidebarGroupContent,
   SidebarMenu,
 } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
 import { FlatMenuItem } from '@/types/menu-items';
 import { FolderPlus, Search } from 'lucide-react';
 import { HTMLProps, useEffect, useRef, useState } from 'react';
@@ -53,23 +54,26 @@ export function MenuItemBuilder({
   const [searchTerm, setSearchTerm] = useState('');
   const [addingToCategory, setAddingToCategory] = useState<number | null>(null);
   const [version, setVersion] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const dataProviderRef = useRef<MenuDataProvider>(new MenuDataProvider(items));
+  const dataProviderRef = useRef<MenuDataProvider>(
+    new MenuDataProvider(items, onChange),
+  );
   const environment = useRef<TreeEnvironmentRef<FlatMenuItem>>(null);
-
-  // Store pending actions to execute after tree update
   const pendingActionsRef = useRef<(() => void)[]>([]);
-
   const isEditing = addingToCategory !== null;
 
   useEffect(() => {
-    // Execute pending actions after tree update
     if (pendingActionsRef.current.length > 0) {
       const actions = pendingActionsRef.current;
       pendingActionsRef.current = [];
       actions.forEach((action) => action());
     }
   }, [version]);
+
+  useEffect(() => {
+    dataProviderRef.current.updateItems(items);
+  }, [items]);
 
   const handleQuickAdd = async (
     parentItem: FlatMenuItem,
@@ -89,17 +93,14 @@ export function MenuItemBuilder({
     onChange([...items, newItem]);
     setAddingToCategory(null);
 
-    // Queue tree actions to execute after update
     pendingActionsRef.current.push(() => {
       if (environment.current) {
-        // First expand parent
         setExpandedItems((prev) => {
           if (!prev.includes(parentItem.id.toString())) {
             return [...prev, parentItem.id.toString()];
           }
           return prev;
         });
-        // Then focus new item
         setFocusedItem(newItem.id.toString());
       }
     });
@@ -141,7 +142,7 @@ export function MenuItemBuilder({
     return (
       <div
         {...lineProps}
-        className="absolute left-0 right-0 h-0.5 bg-primary"
+        className="absolute left-0 right-0 h-0.5 animate-pulse bg-primary shadow-[0_0_8px_rgba(0,0,0,0.25)]"
         style={{
           transform: `translateY(${position.targetIndex * 32}px)`,
         }}
@@ -172,7 +173,12 @@ export function MenuItemBuilder({
   return (
     <div className="flex h-full flex-col">
       <MenuItemToolbar />
-      <div className="flex-1">
+      <div
+        className={cn(
+          'flex-1 transition-all duration-200',
+          isDragging && 'bg-muted/50 shadow-inner',
+        )}
+      >
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupContent>
@@ -211,6 +217,21 @@ export function MenuItemBuilder({
                   if (!isNaN(selectedId) && onSelectItem) {
                     onSelectItem(selectedId);
                   }
+                }}
+                onDragStart={() => setIsDragging(true)}
+                onDragEnd={() => setIsDragging(false)}
+                canDropAt={(items, target) => {
+                  if (target.targetType === 'between-items') return true;
+                  if (target.targetType === 'item') {
+                    const itemId = (target as { targetId: string }).targetId;
+                    return dataProviderRef.current
+                      .getTreeItem(itemId)
+                      .then((item) => item.isFolder);
+                  }
+                  return target.targetType === 'root';
+                }}
+                onDrop={(items, target) => {
+                  dataProviderRef.current.handleDrop(items, target);
                 }}
                 renderItem={renderItem}
                 renderDragBetweenLine={renderDragBetweenLine}

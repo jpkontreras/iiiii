@@ -1,6 +1,6 @@
 import { Header } from '@/Components/Header';
-import { MenuItemBuilder } from '@/components/MenuItems/MenuItemBuilder';
 import { MenuPreview } from '@/components/MenuItems/MenuPreview';
+import { MenuTree } from '@/components/MenuTree';
 import {
   ResizableHandle,
   ResizablePanel,
@@ -116,10 +116,10 @@ export default function Index({ restaurant, menu }: Props) {
       <div className="container">
         <ResizablePanelGroup direction="horizontal">
           <ResizablePanel defaultSize={50} minSize={20}>
-            <MenuItemBuilder
-              items={items}
-              onChange={handleItemsChange}
-              onSelectItem={handleSelectItem}
+            <MenuTree
+            // items={items}
+            // onChange={handleItemsChange}
+            // onSelectItem={handleSelectItem}
             />
           </ResizablePanel>
 

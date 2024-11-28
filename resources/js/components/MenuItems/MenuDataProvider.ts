@@ -1,41 +1,40 @@
 import { FlatMenuItem } from '@/types/menu-items';
-import { TreeDataProvider, TreeItem, TreeItemIndex } from 'react-complex-tree';
+import {
+  DraggingPosition,
+  TreeDataProvider,
+  TreeItem,
+  TreeItemIndex,
+} from 'react-complex-tree';
+
+interface DraggingPositionWithId extends DraggingPosition {
+  targetId: string;
+}
 
 export class MenuDataProvider implements TreeDataProvider<FlatMenuItem> {
   private items: FlatMenuItem[];
-  private itemMap: Map<TreeItemIndex, TreeItem<FlatMenuItem>>;
-  private onChangeListeners: Set<() => void> = new Set();
+  public itemMap: Map<TreeItemIndex, TreeItem<FlatMenuItem>>;
+  private onChange: (items: FlatMenuItem[]) => void;
 
-  constructor(items: FlatMenuItem[]) {
+  constructor(
+    items: FlatMenuItem[],
+    onChange: (items: FlatMenuItem[]) => void,
+  ) {
     this.items = items;
     this.itemMap = new Map();
+    this.onChange = onChange;
     this.buildItemMap();
-  }
-
-  // Add method to subscribe to changes
-  onDidChange(listener: () => void) {
-    this.onChangeListeners.add(listener);
-    return {
-      dispose: () => {
-        this.onChangeListeners.delete(listener);
-      },
-    };
-  }
-
-  private notifyListeners() {
-    this.onChangeListeners.forEach((listener) => listener());
   }
 
   async addItem(item: FlatMenuItem): Promise<void> {
     this.items = [...this.items, item];
     this.addItemToMap(item);
-    this.notifyListeners();
+    this.onChange(this.items);
   }
 
   updateItems(items: FlatMenuItem[]) {
     this.items = items;
     this.buildItemMap();
-    this.notifyListeners();
+    this.onChange(this.items);
   }
 
   getItemMap() {
@@ -93,21 +92,71 @@ export class MenuDataProvider implements TreeDataProvider<FlatMenuItem> {
     itemId: TreeItemIndex,
     newChildren: TreeItemIndex[],
   ): Promise<void> {
-    // Update parent-child relationships in the flat structure
+    const targetItem =
+      itemId === 'root'
+        ? null
+        : this.items.find((item) => item.id.toString() === itemId);
+    const newCategory = targetItem?.name;
+
     const newItems = this.items.map((item) => {
       const itemIdStr = item.id.toString();
       if (newChildren.includes(itemIdStr)) {
         return {
           ...item,
           parentId: itemId === 'root' ? null : parseInt(itemId.toString()),
+          ...(!item.isFolder && newCategory && { category: newCategory }),
         };
       }
       return item;
     });
 
-    // Update the items array and rebuild the map
     this.items = newItems;
     this.buildItemMap();
+    this.onChange(this.items);
+  }
+
+  handleDrop(
+    items: TreeItem<FlatMenuItem>[],
+    target: DraggingPosition,
+  ): Promise<void> {
+    if (target.targetType === 'item' || target.targetType === 'root') {
+      const targetId =
+        target.targetType === 'root'
+          ? 'root'
+          : (target as DraggingPositionWithId).targetId;
+      const movedItemIds = items.map((item) => item.index.toString());
+      return this.onChangeItemChildren(targetId, movedItemIds);
+    }
+
+    if (target.targetType === 'between-items') {
+      // Handle reordering at the same level
+      const { parentId } = target;
+      const parent =
+        parentId === 'root'
+          ? this.itemMap.get('root')
+          : this.itemMap.get(parentId);
+
+      if (parent) {
+        const newChildren = [...parent.children];
+        const movedIds = items.map((item) => item.index.toString());
+
+        // Remove moved items from their current position
+        movedIds.forEach((id) => {
+          const index = newChildren.indexOf(id);
+          if (index !== -1) {
+            newChildren.splice(index, 1);
+          }
+        });
+
+        // Insert at the new position
+        const targetIndex = target.childIndex;
+        newChildren.splice(targetIndex, 0, ...movedIds);
+
+        return this.onChangeItemChildren(parentId, newChildren);
+      }
+    }
+
+    return Promise.resolve();
   }
 
   async onRenameItem(
