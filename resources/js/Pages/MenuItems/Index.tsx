@@ -1,6 +1,6 @@
 import { Header } from '@/Components/Header';
 import { MenuPreview } from '@/components/MenuItems/MenuPreview';
-import { MenuTree } from '@/components/MenuTree';
+import { MenuTree } from '@/components/MenuTree/MenuTree';
 import {
   ResizableHandle,
   ResizablePanel,
@@ -9,7 +9,7 @@ import {
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { FlatMenuItem } from '@/types/menu-items';
 import { __ } from 'laravel-translator';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface PageProps {
   auth: any;
@@ -101,6 +101,10 @@ export default function Index({ restaurant, menu }: Props) {
     return menuItems.filter((item) => !item.isFolder);
   };
 
+  useEffect(() => {
+    console.log('items', items);
+  }, [items]);
+
   return (
     <AuthenticatedLayout
       header={
@@ -116,11 +120,7 @@ export default function Index({ restaurant, menu }: Props) {
       <div className="container">
         <ResizablePanelGroup direction="horizontal">
           <ResizablePanel defaultSize={50} minSize={20}>
-            <MenuTree
-            // items={items}
-            // onChange={handleItemsChange}
-            // onSelectItem={handleSelectItem}
-            />
+            <MenuTree items={items} onItemsChange={handleItemsChange} />
           </ResizablePanel>
 
           <ResizableHandle />
