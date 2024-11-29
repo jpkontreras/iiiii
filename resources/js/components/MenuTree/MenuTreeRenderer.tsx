@@ -23,7 +23,7 @@ interface MenuTreeRendererProps {
   children: React.ReactNode;
   title: React.ReactNode;
   context: TreeItemRenderContext<never>;
-  addingToCategory: string | null;
+  addingToCategory?: string | null;
   setAddingToCategory: (id: string | null) => void;
   handleQuickAdd: (
     parentId: string,

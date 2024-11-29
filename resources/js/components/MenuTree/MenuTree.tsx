@@ -5,8 +5,8 @@ import {
   SidebarMenu,
 } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
-import { FlatMenuItem } from '@/types/menu-items';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { MenuItem } from '@/types';
+import { useMemo } from 'react';
 import {
   StaticTreeDataProvider,
   Tree,
@@ -17,29 +17,34 @@ import {
 import { MenuTreeRenderer } from './MenuTreeRenderer';
 
 interface MenuTreeProps {
-  items: FlatMenuItem[];
-  onItemsChange?: (items: FlatMenuItem[]) => void;
+  items: MenuItem[];
+  onItemsChange?: (items: MenuItem[]) => void;
 }
 
 function convertFlatToTreeItems(
-  flatItems: FlatMenuItem[],
-): Record<TreeItemIndex, TreeItem<string>> {
-  const treeItems: Record<TreeItemIndex, TreeItem<string>> = {
+  flatItems: MenuItem[],
+): Record<TreeItemIndex, TreeItem<MenuItem>> {
+  const treeItems: Record<TreeItemIndex, TreeItem<MenuItem>> = {
     root: {
       index: 'root',
       canMove: true,
       isFolder: true,
       children: [],
-      data: 'root',
+      data: {
+        id: 0,
+        name: 'root',
+        parentId: null,
+        isFolder: true,
+      },
       canRename: true,
     },
   };
 
   // First pass: Create all items
   flatItems.forEach((item) => {
-    const treeItem: TreeItem<string> = {
+    const treeItem: TreeItem<MenuItem> = {
       index: item.id.toString(),
-      data: item.name,
+      data: item,
       isFolder: item.isFolder,
     };
 
@@ -65,17 +70,15 @@ function convertFlatToTreeItems(
 }
 
 function convertTreeToFlatItems(
-  treeItems: Record<TreeItemIndex, TreeItem<string>>,
-): FlatMenuItem[] {
-  const flatItems: FlatMenuItem[] = [];
+  treeItems: Record<TreeItemIndex, TreeItem<MenuItem>>,
+): MenuItem[] {
+  const flatItems: MenuItem[] = [];
   const processedIds = new Set<string>();
 
-  // Helper function to process each item
   const processItem = (
     itemId: TreeItemIndex,
     parentId: number | null = null,
   ): void => {
-    // Skip if already processed or item doesn't exist
     if (processedIds.has(itemId.toString()) || !treeItems[itemId]) {
       return;
     }
@@ -85,18 +88,28 @@ function convertTreeToFlatItems(
 
     // Skip the root item
     if (itemId === 'root') {
-      // Process root's children
       treeItem.children?.forEach((childId) => processItem(childId, null));
       return;
     }
 
-    // Convert tree item to flat item
-    const flatItem: FlatMenuItem = {
-      id: parseInt(itemId.toString()),
-      name: treeItem.data,
-      parentId,
-      isFolder: !!treeItem.children,
-    };
+    // Get the original item data or create new flat item
+    let flatItem: MenuItem;
+    if (typeof treeItem.data === 'object' && treeItem.data !== null) {
+      // Use the original data but update parentId and isFolder status
+      flatItem = {
+        ...(treeItem.data as MenuItem),
+        parentId, // Update with new parent
+        isFolder: !!treeItem.children,
+      };
+    } else {
+      // Create new flat item if no original data exists
+      flatItem = {
+        id: parseInt(itemId.toString()),
+        name: String(treeItem.data),
+        parentId,
+        isFolder: !!treeItem.children,
+      };
+    }
 
     flatItems.push(flatItem);
 
@@ -109,54 +122,62 @@ function convertTreeToFlatItems(
   // Start processing from root
   processItem('root');
 
-  return flatItems;
+  return flatItems.sort((a, b) => a.id - b.id);
 }
 
-export function MenuTree({ items: flatItems, onItemsChange }: MenuTreeProps) {
-  const [addingToCategory, setAddingToCategory] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const isUpdatingFromProps = useRef(false);
-  const items = useRef<Record<TreeItemIndex, TreeItem<string>>>(
-    convertFlatToTreeItems(flatItems),
-  );
-  const dataProviderRef = useRef<StaticTreeDataProvider<string>>();
+// return {
+//   root: {
+//     index: 'root',
+//     children: ['child1', 'child2'],
+//     data: 'root',
+//   },
+//   child1: {
+//     index: 'child1',
+//     children: [],
+//     data: {
+//       id: 1,
+//       name: 'child1',
+//       parentId: 0,
+//       isFolder: true,
+//     },
+//     isFolder: true,
+//   },
+//   child2: {
+//     index: 'child2',
+//     children: [],
+//     data: {
+//       id: 1,
+//       name: 'child2',
+//       parentId: 1,
+//       isFolder: true,
+//     },
+//   },
+// };
 
-  // Create data provider only once
-  const dataProvider = useMemo(() => {
-    const provider = new StaticTreeDataProvider(
-      items.current,
-      (item, data) => ({
-        ...item,
-        data,
-      }),
-    );
+function flatToTree(
+  items: MenuItem[],
+): Record<TreeItemIndex, TreeItem<MenuItem | string>> {
+  const treeBuild = items.map((item) => ({
+    [item.name]: {
+      index: item.name,
+      children: [],
+      data: item,
+    },
+  }));
 
-    provider.onDidChangeTreeData((changedItemIds) => {
-      if (!isUpdatingFromProps.current) {
-        console.log('Tree data changed:', changedItemIds);
-        const newFlatItems = convertTreeToFlatItems(items.current);
-        onItemsChange?.(newFlatItems);
-      }
-    });
+  return {
+    root: {
+      index: 'root',
+      children: ['child1', 'child2'],
+      data: 'root',
+    },
+    ...treeBuild,
+  };
+}
 
-    dataProviderRef.current = provider;
-    return provider;
-  }, []); // Empty dependency array - create only once
-
-  // Update tree items when flat items change
-  useEffect(() => {
-    isUpdatingFromProps.current = true;
-    items.current = convertFlatToTreeItems(flatItems);
-
-    if (dataProviderRef.current) {
-      dataProviderRef.current.onDidChangeTreeDataEmitter.emit(['root']);
-    }
-
-    // Reset the flag after the update
-    requestAnimationFrame(() => {
-      isUpdatingFromProps.current = false;
-    });
-  }, [flatItems]);
+export function MenuTree({ items, onItemsChange }: MenuTreeProps) {
+  const treeItems = useMemo(() => items, [items]);
+  console.log({ treeItems });
 
   return (
     <div className="flex h-full flex-col">
@@ -165,27 +186,37 @@ export function MenuTree({ items: flatItems, onItemsChange }: MenuTreeProps) {
           <SidebarGroup>
             <SidebarGroupContent>
               <UncontrolledTreeEnvironment
-                dataProvider={dataProvider}
-                getItemTitle={(item) => item.data}
+                dataProvider={
+                  new StaticTreeDataProvider(treeItems, (item, data) => ({
+                    ...item,
+                    data,
+                  }))
+                }
+                getItemTitle={(item) => item.data.name}
                 viewState={{
                   ['menu-tree']: {},
                 }}
-                canSearch={!isEditing}
-                canSearchByStartingTyping={!isEditing}
+                //canSearch={!isEditing}
+                //canSearchByStartingTyping={!isEditing}
                 canDragAndDrop
                 canReorderItems
                 canDropOnFolder
+                canDropAt={(draggedItems, target) => {
+                  console.log({ draggedItems });
+
+                  return true;
+                }}
                 renderItem={(props) => (
                   <MenuTreeRenderer
                     {...props}
-                    addingToCategory={addingToCategory}
+                    // addingToCategory={addingToCategory}
                     setAddingToCategory={(id) => {
-                      setAddingToCategory(id);
-                      setIsEditing(!!id);
+                      // setAddingToCategory(id);
+                      // setIsEditing(!!id);
                     }}
                     handleQuickAdd={(parentId, data) => {
-                      setAddingToCategory(null);
-                      setIsEditing(false);
+                      // setAddingToCategory(null);
+                      // setIsEditing(false);
                     }}
                   />
                 )}

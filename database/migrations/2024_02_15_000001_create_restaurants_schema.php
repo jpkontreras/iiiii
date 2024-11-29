@@ -43,26 +43,18 @@ return new class extends Migration
       $table->unique(['restaurant_id', 'name']);
     });
 
-    // Categories table
-    Schema::create('categories', function (Blueprint $table) {
+    // Menu Entries table - replaces both categories and menu_items tables
+    Schema::create('menu_entries', function (Blueprint $table) {
       $table->id();
       $table->string('name');
       $table->text('description')->nullable();
-      $table->foreignId('parent_category_id')->nullable()->constrained('categories')->onDelete('set null');
-      $table->integer('order')->default(0);
-      $table->timestamps();
-    });
-
-    // Menu Items table
-    Schema::create('menu_items', function (Blueprint $table) {
-      $table->id();
-      $table->string('name');
-      $table->text('description')->nullable();
-      $table->decimal('price', 10, 2);
+      $table->decimal('price', 10, 2)->nullable();
       $table->foreignId('menu_id')->constrained()->onDelete('cascade');
-      $table->foreignId('category_id')->constrained()->onDelete('cascade');
+      $table->foreignId('parent_id')->nullable()->constrained('menu_entries')->onDelete('cascade');
+      $table->json('properties')->nullable();
       $table->string('photo_path')->nullable();
       $table->boolean('is_available')->default(true);
+      $table->integer('order')->default(0);
       $table->timestamps();
     });
 
@@ -70,15 +62,15 @@ return new class extends Migration
     Schema::create('tags', function (Blueprint $table) {
       $table->id();
       $table->string('name')->unique();
-      $table->text('description')->nullable();
+      $table->string('type')->nullable();  // dietary, spice_level, allergen, etc.
       $table->timestamps();
     });
 
-    // Menu Item Tags pivot table
-    Schema::create('menu_item_tag', function (Blueprint $table) {
-      $table->foreignId('menu_item_id')->constrained()->onDelete('cascade');
+    // Menu Entry Tags pivot table
+    Schema::create('menu_entry_tag', function (Blueprint $table) {
+      $table->foreignId('menu_entry_id')->constrained()->onDelete('cascade');
       $table->foreignId('tag_id')->constrained()->onDelete('cascade');
-      $table->primary(['menu_item_id', 'tag_id']);
+      $table->primary(['menu_entry_id', 'tag_id']);
     });
 
     // Collaborators table
@@ -105,11 +97,11 @@ return new class extends Migration
       $table->timestamps();
     });
 
-    // Order Items table
+    // Order Items table - updated to reference menu_entries
     Schema::create('order_items', function (Blueprint $table) {
       $table->id();
       $table->foreignId('order_id')->constrained()->onDelete('cascade');
-      $table->foreignId('menu_item_id')->constrained()->onDelete('cascade');
+      $table->foreignId('menu_entry_id')->constrained()->onDelete('cascade');
       $table->integer('quantity')->default(1);
       $table->decimal('total_price', 10, 2);
       $table->text('special_instructions')->nullable();
@@ -119,14 +111,16 @@ return new class extends Migration
 
   public function down(): void
   {
-    // Drop tables in reverse order of creation
+    // Drop tables in correct order to handle dependencies
     Schema::dropIfExists('order_items');
     Schema::dropIfExists('orders');
     Schema::dropIfExists('collaborators');
-    Schema::dropIfExists('menu_item_tag');
+    Schema::dropIfExists('menu_entry_tag');  // Drop pivot table before tags and menu_entries
+    Schema::dropIfExists('menu_item_tag');   // Drop old pivot table if it exists
     Schema::dropIfExists('tags');
-    Schema::dropIfExists('menu_items');
-    Schema::dropIfExists('categories');
+    Schema::dropIfExists('menu_entries');
+    Schema::dropIfExists('menu_items');      // Drop old table if it exists
+    Schema::dropIfExists('categories');      // Drop old table if it exists
     Schema::dropIfExists('menus');
     Schema::dropIfExists('restaurants');
     Schema::dropIfExists('user_settings');

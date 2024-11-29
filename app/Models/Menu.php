@@ -30,8 +30,8 @@ final class Menu extends Model
     return $this->belongsTo(Restaurant::class);
   }
 
-  public function menuItems(): HasMany
+  public function entries(): HasMany
   {
-    return $this->hasMany(MenuItem::class);
+    return $this->hasMany(MenuEntry::class);
   }
 }

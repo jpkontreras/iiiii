@@ -14,7 +14,7 @@ final class OrderItem extends Model
 
   protected $fillable = [
     'order_id',
-    'menu_item_id',
+    'menu_entry_id',
     'quantity',
     'special_instructions',
     'total_price',
@@ -30,8 +30,8 @@ final class OrderItem extends Model
     return $this->belongsTo(Order::class);
   }
 
-  public function menuItem(): BelongsTo
+  public function menuEntry(): BelongsTo
   {
-    return $this->belongsTo(MenuItem::class);
+    return $this->belongsTo(MenuEntry::class);
   }
 }

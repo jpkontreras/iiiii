@@ -7,9 +7,9 @@ import {
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { FlatMenuItem } from '@/types/menu-items';
+import { MenuItem } from '@/types';
 import { __ } from 'laravel-translator';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 interface PageProps {
   auth: any;
@@ -28,20 +28,19 @@ interface Menu {
 interface Props extends PageProps {
   restaurant: Restaurant;
   menu: Menu;
+  groupedItems: MenuItem[];
 }
 
-const defaultItems: FlatMenuItem[] = [
+const defaultItems: MenuItem[] = [
   {
     id: 1,
     name: 'Main Dishes',
     parentId: null,
-    isFolder: true,
   },
   {
     id: 2,
     name: 'Grilled Salmon',
     parentId: 1,
-    isFolder: false,
     description: 'Fresh salmon with herbs and lemon',
     price: 24.99,
     category: 'Main Dishes',
@@ -65,18 +64,28 @@ const defaultItems: FlatMenuItem[] = [
     id: 5,
     name: 'Chocolate Soufflé',
     parentId: 4,
-    isFolder: false,
+    isFolder: true,
     description: 'Warm chocolate dessert with vanilla ice cream',
     price: 12.99,
     category: 'Desserts',
   },
+
+  {
+    id: 6,
+    name: 'Chocolat',
+    parentId: 5,
+    isFolder: false,
+    description: 'Warm chocolate dessert with vanilla ice cream',
+    price: 12.99,
+    category: 'Chocolate Soufflé',
+  },
 ];
 
-export default function Index({ restaurant, menu }: Props) {
-  const [items, setItems] = useState<FlatMenuItem[]>(defaultItems);
+export default function Index({ restaurant, menu, groupedItems }: Props) {
+  const [items, setItems] = useState<MenuItem[]>(defaultItems);
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
 
-  const handleItemsChange = (newItems: FlatMenuItem[]) => {
+  const handleItemsChange = (newItems: MenuItem[]) => {
     setItems(newItems);
   };
 
@@ -97,13 +106,9 @@ export default function Index({ restaurant, menu }: Props) {
   };
 
   // Updated to work with flat structure
-  const getFlatMenuItems = (menuItems: FlatMenuItem[]): FlatMenuItem[] => {
+  const getFlatMenuItems = (menuItems: MenuItem[]): MenuItem[] => {
     return menuItems.filter((item) => !item.isFolder);
   };
-
-  useEffect(() => {
-    console.log('items', items);
-  }, [items]);
 
   return (
     <AuthenticatedLayout
@@ -120,7 +125,7 @@ export default function Index({ restaurant, menu }: Props) {
       <div className="container">
         <ResizablePanelGroup direction="horizontal">
           <ResizablePanel defaultSize={50} minSize={20}>
-            <MenuTree items={items} onItemsChange={handleItemsChange} />
+            <MenuTree items={groupedItems} onItemsChange={handleItemsChange} />
           </ResizablePanel>
 
           <ResizableHandle />

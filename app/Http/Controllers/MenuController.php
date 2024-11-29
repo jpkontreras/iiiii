@@ -11,9 +11,6 @@ use App\Models\Restaurant;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\DB;
-use App\Jobs\ProcessMenuFiles;
-use Illuminate\Support\Facades\Storage;
 
 final class MenuController extends Controller
 {
@@ -47,7 +44,7 @@ final class MenuController extends Controller
     ]);
 
     return redirect()
-      ->route('restaurants.menus.items.index', [
+      ->route('restaurants.menus.entries.index', [
         'restaurant' => $restaurant->id,
         'menu' => $menu->id,
       ])
@@ -87,7 +84,7 @@ final class MenuController extends Controller
     ]);
 
     return redirect()
-      ->route('restaurants.menus.items.index', [
+      ->route('restaurants.menus.entries.index', [
         'restaurant' => $restaurant->id,
         'menu' => $menu->id,
       ])
