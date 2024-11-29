@@ -1,89 +1,19 @@
-import { Button } from '@/components/ui/button';
-import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { ChevronRight, Component, Folder, PlusCircle } from 'lucide-react';
-import { useEffect, useRef } from 'react';
-import { TreeItem, TreeItemRenderContext } from 'react-complex-tree';
-import { QuickAddForm } from '../MenuItems/QuickAddForm';
+import { Tag } from '@/types';
+import { TreeRenderProps } from 'react-complex-tree';
 
-interface RenderItemArrowProps {
-  context: TreeItemRenderContext<never>;
-  isFolder: boolean;
+interface MenuTreeRendererProps extends TreeRenderProps {
+  icon?: React.ReactNode;
+  description?: string | null;
+  price?: string | number | null;
+  tags?: Tag[];
 }
 
-interface RenderItemContentProps {
-  title: React.ReactNode;
-  isFolder: boolean;
-  onAddClick?: () => void;
-}
-
-interface MenuTreeRendererProps {
-  item: TreeItem<string>;
-  depth: number;
-  children: React.ReactNode;
-  title: React.ReactNode;
-  context: TreeItemRenderContext<never>;
-  addingToCategory?: string | null;
-  setAddingToCategory: (id: string | null) => void;
-  handleQuickAdd: (
-    parentId: string,
-    data: { name: string; price: number },
-  ) => void;
-}
-
-function RenderItemArrow({ context, isFolder }: RenderItemArrowProps) {
-  if (!isFolder) {
-    return <span className="ml-4" />;
-  }
-
-  return (
-    <span
-      {...context.arrowProps}
-      className={cn(
-        'flex size-4 items-center justify-center text-muted-foreground transition-transform duration-200',
-        context.isExpanded && 'rotate-90',
-      )}
-    >
-      <ChevronRight className="size-3" />
-    </span>
-  );
-}
-
-function RenderItemContent({
-  title,
-  isFolder,
-  onAddClick,
-}: RenderItemContentProps) {
-  const buttonRef = useRef<HTMLButtonElement>(null);
-
-  return (
-    <div className="flex w-full items-center gap-2">
-      {isFolder ? (
-        <Folder className="size-4 shrink-0 text-muted-foreground" />
-      ) : (
-        <Component className="size-4 shrink-0 text-muted-foreground" />
-      )}
-      <div className="flex flex-1 items-center gap-x-1">
-        <span className="flex-1 truncate">{title}</span>
-        {isFolder && (
-          <Button
-            ref={buttonRef}
-            variant="ghost"
-            size="icon"
-            className="size-7 opacity-0 group-hover:opacity-100"
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddClick?.();
-            }}
-            data-add-button
-          >
-            <PlusCircle className="size-3" />
-          </Button>
-        )}
-      </div>
-    </div>
-  );
-}
+const formatPrice = (price: string | number | null): string => {
+  if (!price) return '';
+  return `$${Number(price).toFixed(2)}`;
+};
 
 export function MenuTreeRenderer({
   item,
@@ -91,110 +21,53 @@ export function MenuTreeRenderer({
   children,
   title,
   context,
-  addingToCategory,
-  setAddingToCategory,
-  handleQuickAdd,
+  arrow,
+  icon,
+  description,
+  price,
+  tags,
+  ...props
 }: MenuTreeRendererProps) {
-  const formRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!addingToCategory) return;
-
-    function handleClickOutside(event: MouseEvent) {
-      const target = event.target as HTMLElement;
-
-      // Don't close if clicking the add button or the form
-      if (
-        target.closest('[data-add-button]') ||
-        (formRef.current && formRef.current.contains(target))
-      ) {
-        return;
-      }
-
-      setAddingToCategory(null);
-    }
-
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        setAddingToCategory(null);
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleEscape);
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [addingToCategory, setAddingToCategory]);
-
-  // Hide form on selection change
-  useEffect(() => {
-    if (context.isSelected) {
-      setAddingToCategory(null);
-    }
-  }, [context.isSelected, setAddingToCategory]);
-
-  if (item.index === 'root') return <>{children}</>;
-
-  const itemId = item.index.toString();
-  const isAddingHere = addingToCategory === itemId;
-  const isSibling = false;
+  const indentation = depth * 20;
+  const isSelected = context.isSelected;
+  const isFocused = context.isFocused;
 
   return (
-    <>
-      <SidebarMenuItem>
-        <SidebarMenuButton
-          {...context.itemContainerWithoutChildrenProps}
-          {...context.interactiveElementProps}
-          type="button"
-          size="default"
-          isActive={context.isSelected}
-          className={cn(
-            'group relative',
-            context.isDraggingOver && 'bg-sidebar-accent/50',
-            isSibling && 'mb-1',
-            isAddingHere && 'mb-2',
+    <li
+      {...context.itemContainerWithChildrenProps}
+      className="relative flex flex-col"
+    >
+      <div
+        {...context.itemContainerWithoutChildrenProps}
+        {...props}
+        className={cn(
+          'group relative flex h-8 cursor-pointer items-center rounded-md px-2 hover:bg-accent',
+          isSelected && 'bg-accent',
+          isFocused && 'ring-1 ring-ring ring-offset-1',
+        )}
+        style={{ paddingLeft: indentation }}
+      >
+        <div className="flex flex-1 items-center gap-2 overflow-hidden">
+          {arrow}
+          {icon}
+          <span className="truncate">{title}</span>
+          {price && (
+            <span className="ml-auto text-sm text-muted-foreground">
+              {formatPrice(price)}
+            </span>
           )}
-          style={{
-            paddingLeft: depth > 0 ? `${depth * 12}px` : undefined,
-          }}
-        >
-          <div className="flex items-center gap-2">
-            <RenderItemArrow context={context} isFolder={!!item.isFolder} />
-            <RenderItemContent
-              title={title}
-              isFolder={!!item.isFolder}
-              onAddClick={() => {
-                if (item.isFolder && !context.isExpanded) {
-                  context.expandItem?.();
-                }
-                setAddingToCategory(itemId);
-              }}
-            />
-          </div>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-
-      {isAddingHere && (
-        <SidebarMenuItem>
-          <div
-            ref={formRef}
-            className={cn(
-              'mb-1 rounded-sm bg-sidebar-accent',
-              depth > 0 ? `ml-[${(depth + 1) * 12}px]` : 'ml-8',
-            )}
-          >
-            <QuickAddForm
-              parentId={parseInt(itemId)}
-              onSubmit={(data) => handleQuickAdd(itemId, data)}
-              onCancel={() => setAddingToCategory(null)}
-            />
-          </div>
-        </SidebarMenuItem>
-      )}
+          {tags?.map((tag) => (
+            <Badge
+              key={tag.id}
+              variant={tag.type === 'dietary' ? 'outline' : 'default'}
+              className="ml-2 text-xs"
+            >
+              {tag.name}
+            </Badge>
+          ))}
+        </div>
+      </div>
       {children}
-    </>
+    </li>
   );
 }
