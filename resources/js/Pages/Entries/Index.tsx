@@ -1,6 +1,6 @@
 import { Header } from '@/Components/Header';
-import { MenuPreview } from '@/components/MenuItems/MenuPreview';
 import { MenuTree } from '@/components/MenuTree/MenuTree';
+import { MenuTreePreview } from '@/components/MenuTree/Preview';
 import {
   ResizableHandle,
   ResizablePanel,
@@ -31,58 +31,8 @@ interface Props extends PageProps {
   groupedItems: MenuItem[];
 }
 
-const defaultItems: MenuItem[] = [
-  {
-    id: 1,
-    name: 'Main Dishes',
-    parentId: null,
-  },
-  {
-    id: 2,
-    name: 'Grilled Salmon',
-    parentId: 1,
-    description: 'Fresh salmon with herbs and lemon',
-    price: 24.99,
-    category: 'Main Dishes',
-  },
-  {
-    id: 3,
-    name: 'Beef Tenderloin',
-    parentId: 1,
-    isFolder: false,
-    description: 'Premium cut with red wine sauce',
-    price: 34.99,
-    category: 'Main Dishes',
-  },
-  {
-    id: 4,
-    name: 'Desserts',
-    parentId: null,
-    isFolder: true,
-  },
-  {
-    id: 5,
-    name: 'Chocolate Soufflé',
-    parentId: 4,
-    isFolder: true,
-    description: 'Warm chocolate dessert with vanilla ice cream',
-    price: 12.99,
-    category: 'Desserts',
-  },
-
-  {
-    id: 6,
-    name: 'Chocolat',
-    parentId: 5,
-    isFolder: false,
-    description: 'Warm chocolate dessert with vanilla ice cream',
-    price: 12.99,
-    category: 'Chocolate Soufflé',
-  },
-];
-
 export default function Index({ restaurant, menu, groupedItems }: Props) {
-  const [items, setItems] = useState<MenuItem[]>(defaultItems);
+  const [items, setItems] = useState<MenuItem[]>(groupedItems);
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
 
   const handleItemsChange = (newItems: MenuItem[]) => {
@@ -105,11 +55,6 @@ export default function Index({ restaurant, menu, groupedItems }: Props) {
     handleSelectItem(itemId);
   };
 
-  // Updated to work with flat structure
-  const getFlatMenuItems = (menuItems: MenuItem[]): MenuItem[] => {
-    return menuItems.filter((item) => !item.isFolder);
-  };
-
   return (
     <AuthenticatedLayout
       header={
@@ -125,16 +70,16 @@ export default function Index({ restaurant, menu, groupedItems }: Props) {
       <div className="container">
         <ResizablePanelGroup direction="horizontal">
           <ResizablePanel defaultSize={50} minSize={20}>
-            <MenuTree items={groupedItems} onItemsChange={handleItemsChange} />
+            <MenuTree items={items} onItemsChange={handleItemsChange} />
           </ResizablePanel>
 
           <ResizableHandle />
 
           <ResizablePanel defaultSize={50}>
-            <MenuPreview
+            <MenuTreePreview
               menuName={menu.name}
               restaurantName={restaurant.name}
-              items={getFlatMenuItems(items)}
+              items={items}
               selectedItems={selectedItems}
               onItemClick={handleItemClick}
             />
