@@ -28,12 +28,14 @@ interface Menu {
 interface Props extends PageProps {
   restaurant: Restaurant;
   menu: Menu;
-  groupedItems: MenuItem[];
+  entries: MenuItem[];
 }
 
-export default function Index({ restaurant, menu, groupedItems }: Props) {
-  const [items, setItems] = useState<MenuItem[]>(groupedItems);
+export default function Index({ restaurant, menu, entries }: Props) {
+  const [items, setItems] = useState<MenuItem[]>(entries);
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
+
+  console.log({ entries });
 
   const handleItemsChange = (newItems: MenuItem[]) => {
     setItems(newItems);

@@ -6,6 +6,7 @@ export interface MenuItem {
   parentId: number | string | null;
   category?: string;
   isFolder?: boolean;
+  items?: MenuItem[];
   children?: MenuItem[];
   tags?: string[];
 }

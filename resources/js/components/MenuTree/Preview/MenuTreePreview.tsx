@@ -9,7 +9,6 @@ interface MenuTreePreviewProps {
   restaurantName: string;
   items: MenuItem[];
   selectedItems: Set<number>;
-  onItemClick: (itemId: number) => void;
 }
 
 export function MenuTreePreview({
@@ -51,7 +50,7 @@ export function MenuTreePreview({
                     )}
                   </div>
 
-                  <div className="space-y-6">
+                  <div className="space-y-8">
                     {category.items?.map((item) => (
                       <MenuTreeItem
                         key={item.id}

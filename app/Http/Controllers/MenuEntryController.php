@@ -23,7 +23,7 @@ final class MenuEntryController extends Controller
     return Inertia::render('Entries/Index', [
       'menu' => $menu->load('restaurant'),
       'restaurant' => $menu->restaurant,
-      'groupedItems' => $entries,
+      'entries' => $entries,
       'structure' => MenuEntry::getMenuStructure($entries)
     ]);
   }
@@ -31,18 +31,18 @@ final class MenuEntryController extends Controller
   public function store(MenuEntryRequest $request): JsonResponse
   {
     $entry = MenuEntry::create($request->validated());
-    return response()->json($entry, 201);
+    return response()->json($entry->load('parent'), 201);
   }
 
   public function show(MenuEntry $entry): JsonResponse
   {
-    return response()->json($entry->load(['tags', 'children']));
+    return response()->json($entry->load(['tags', 'children', 'parent']));
   }
 
   public function update(MenuEntryRequest $request, MenuEntry $entry): JsonResponse
   {
     $entry->update($request->validated());
-    return response()->json($entry);
+    return response()->json($entry->fresh()->load('parent'));
   }
 
   public function destroy(MenuEntry $entry): JsonResponse

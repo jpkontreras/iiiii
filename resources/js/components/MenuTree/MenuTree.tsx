@@ -154,30 +154,51 @@ function convertTreeToFlatItems(
 //   },
 // };
 
+function extractTreeItems(
+  items: MenuItem[],
+): Record<string, TreeItem<MenuItem>> {
+  const keys: Record<string, TreeItem<MenuItem>> = {};
+
+  items.forEach((item) => {
+    // console.log({ parentId: item.parentId });
+    keys[item.name] = {
+      index: item.name,
+      isFolder: !Boolean(item.parentId),
+      data: item,
+    };
+  });
+
+  return keys;
+}
+
 function flatToTree(
   items: MenuItem[],
 ): Record<TreeItemIndex, TreeItem<MenuItem | string>> {
-  const treeBuild = items.map((item) => ({
-    [item.name]: {
-      index: item.name,
-      children: [],
-      data: item,
-    },
-  }));
+  // console.log({ items });
+
+  const newItems = extractTreeItems(items);
+  // console.log({ newItems, k: Object.keys(newItems) });
 
   return {
     root: {
       index: 'root',
-      children: ['child1', 'child2'],
+      children: Object.keys(newItems),
       data: 'root',
     },
-    ...treeBuild,
+    ...newItems,
   };
 }
 
 export function MenuTree({ items, onItemsChange }: MenuTreeProps) {
-  const treeItems = useMemo(() => items, [items]);
-  console.log({ treeItems });
+  const treeItems = useMemo(() => flatToTree(items), [items]);
+  const provider = useMemo(
+    () => new StaticTreeDataProvider(treeItems),
+    [treeItems],
+  );
+
+  provider.onDidChangeTreeDataEmitter.on((data) => {
+    // console.log({ data });
+  });
 
   return (
     <div className="flex h-full flex-col">
@@ -186,12 +207,7 @@ export function MenuTree({ items, onItemsChange }: MenuTreeProps) {
           <SidebarGroup>
             <SidebarGroupContent>
               <UncontrolledTreeEnvironment
-                dataProvider={
-                  new StaticTreeDataProvider(treeItems, (item, data) => ({
-                    ...item,
-                    data,
-                  }))
-                }
+                dataProvider={provider}
                 getItemTitle={(item) => item.data.name}
                 viewState={{
                   ['menu-tree']: {},

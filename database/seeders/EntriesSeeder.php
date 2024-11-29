@@ -12,27 +12,15 @@ class EntriesSeeder extends Seeder
 {
     public function run(): void
     {
-        // First, create tags
-        $tags = $this->createTags();
-
-        // Create main categories first
-        $categories = $this->createCategories();
-
-        // Create items under categories
-        $this->createMenuItems($categories, $tags);
+        $this->createTags();
+        $this->createMenuOptionTypes();
+        $this->createMenuOptionValues();
+        $this->createMenuEntries();
     }
 
-    private function createTags(): array
+    private function createTags(): void
     {
-        // Disable triggers for PostgreSQL
-        DB::statement('ALTER TABLE menu_entry_tag DISABLE TRIGGER ALL;');
-        DB::statement('ALTER TABLE tags DISABLE TRIGGER ALL;');
-
-        // Clear existing data
-        DB::table('menu_entry_tag')->delete();
-        DB::table('tags')->delete();
-
-        $tags = [
+        DB::table('tags')->insert([
             ['name' => 'Vegetarian', 'type' => 'dietary'],
             ['name' => 'Vegan', 'type' => 'dietary'],
             ['name' => 'Gluten-Free', 'type' => 'dietary'],
@@ -42,218 +30,140 @@ class EntriesSeeder extends Seeder
             ['name' => 'Dairy-Free', 'type' => 'dietary'],
             ['name' => 'Popular', 'type' => 'feature'],
             ['name' => 'Chef\'s Special', 'type' => 'feature'],
-        ];
-
-        foreach ($tags as $tag) {
-            DB::table('tags')->insert([
-                ...$tag,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ]);
-        }
-
-        // Re-enable triggers for PostgreSQL
-        DB::statement('ALTER TABLE menu_entry_tag ENABLE TRIGGER ALL;');
-        DB::statement('ALTER TABLE tags ENABLE TRIGGER ALL;');
-
-        return DB::table('tags')->pluck('id', 'name')->toArray();
+        ]);
     }
 
-    private function createCategories(): array
+    private function createMenuOptionTypes(): void
     {
-        $categories = [
-            // Pure categories
-            [
-                'name' => 'Starters',
-                'description' => 'Begin your meal with these delightful appetizers',
-                'menu_id' => 1,
-                'properties' => null,
-                'is_available' => true,
-                'order' => 1,
-            ],
-            // Category with shared properties
-            [
-                'name' => 'Fresh Salads',
-                'description' => 'Crisp, fresh salads made to order',
-                'menu_id' => 1,
-                'properties' => json_encode([
-                    'base_ingredients' => ['Mixed Greens', 'Cherry Tomatoes', 'Cucumber'],
-                    'dressing_options' => ['Balsamic', 'Ranch', 'Lemon Vinaigrette'],
-                ]),
-                'is_available' => true,
-                'order' => 2,
-            ],
-            [
-                'name' => 'Main Courses',
-                'description' => 'Hearty main dishes',
-                'menu_id' => 1,
-                'properties' => null,
-                'is_available' => true,
-                'order' => 3,
-            ],
-            [
-                'name' => 'Build Your Own',
-                'description' => 'Customize your perfect meal',
-                'menu_id' => 1,
-                'properties' => null,
-                'is_available' => true,
-                'order' => 4,
-            ],
-        ];
-
-        foreach ($categories as $category) {
-            DB::table('menu_entries')->insert([
-                ...$category,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ]);
-        }
-
-        return DB::table('menu_entries')->pluck('id', 'name')->toArray();
+        DB::table('menu_option_types')->insert([
+            ['code' => 'size', 'name' => 'Size', 'is_required' => true, 'order' => 1],
+            ['code' => 'temp', 'name' => 'Temperature', 'is_required' => true, 'order' => 2],
+            ['code' => 'milk', 'name' => 'Milk Type', 'is_required' => false, 'order' => 3],
+            ['code' => 'extra_shot', 'name' => 'Extra Shot', 'is_required' => false, 'order' => 4],
+            ['code' => 'protein', 'name' => 'Protein', 'is_required' => true, 'order' => 1],
+            ['code' => 'cooking_temp', 'name' => 'Cooking Temperature', 'is_required' => true, 'order' => 2],
+            ['code' => 'sides', 'name' => 'Side Dishes', 'is_required' => false, 'order' => 3],
+            ['code' => 'toppings', 'name' => 'Toppings', 'is_required' => false, 'order' => 4],
+            ['code' => 'spice_level', 'name' => 'Spice Level', 'is_required' => false, 'order' => 5],
+        ]);
     }
 
-    private function createMenuItems(array $categories, array $tags): void
+    private function createMenuOptionValues(): void
     {
-        // Starters
-        $this->createStarters($categories['Starters'], $tags);
+        $types = DB::table('menu_option_types')->get();
 
-        // Salads with shared properties
-        $this->createSalads($categories['Fresh Salads'], $tags);
-
-        // Main courses
-        $this->createMainCourses($categories['Main Courses'], $tags);
-
-        // Customizable items
-        $this->createCustomizableItems($categories['Build Your Own'], $tags);
-    }
-
-    private function createStarters(int $parentId, array $tags): void
-    {
-        $starters = [
-            [
-                'name' => 'Bruschetta',
-                'description' => 'Toasted bread with fresh tomatoes, garlic, and basil',
-                'price' => 8.99,
-                'parent_id' => $parentId,
-                'menu_id' => 1,
-                'properties' => null,
-                'photo_path' => 'starters/bruschetta.jpg',
-                'is_available' => true,
-                'order' => 1,
-                'tags' => ['Vegetarian', 'Popular']
-            ],
-            // Add more starters...
-        ];
-
-        $this->insertMenuItems($starters, $tags);
-    }
-
-    private function createSalads(int $parentId, array $tags): void
-    {
-        $salads = [
-            [
-                'name' => 'Greek Salad',
-                'description' => 'Traditional Greek salad with feta cheese and olives',
-                'price' => 12.99,
-                'parent_id' => $parentId,
-                'menu_id' => 1,
-                'properties' => json_encode([
-                    'additional_ingredients' => ['Feta Cheese', 'Kalamata Olives', 'Red Onions'],
-                ]),
-                'photo_path' => 'salads/greek.jpg',
-                'is_available' => true,
-                'order' => 1,
-                'tags' => ['Vegetarian', 'Gluten-Free']
-            ],
-            // Add more salads...
-        ];
-
-        $this->insertMenuItems($salads, $tags);
-    }
-
-    private function createMainCourses(int $parentId, array $tags): void
-    {
-        $mains = [
-            [
-                'name' => 'Grilled Salmon',
-                'description' => 'Fresh Atlantic salmon with seasonal vegetables',
-                'price' => 24.99,
-                'parent_id' => $parentId,
-                'menu_id' => 1,
-                'properties' => json_encode([
-                    'cooking_options' => ['Medium Rare', 'Medium', 'Well Done'],
-                    'sides' => ['Roasted Potatoes', 'Steam Vegetables', 'Rice Pilaf']
-                ]),
-                'photo_path' => 'mains/salmon.jpg',
-                'is_available' => true,
-                'order' => 1,
-                'tags' => ['Gluten-Free', 'Popular']
-            ],
-            // Add more main courses...
-        ];
-
-        $this->insertMenuItems($mains, $tags);
-    }
-
-    private function createCustomizableItems(int $parentId, array $tags): void
-    {
-        $customItems = [
-            [
-                'name' => 'Build Your Pasta',
-                'description' => 'Create your perfect pasta dish',
-                'price' => 14.99,
-                'parent_id' => $parentId,
-                'menu_id' => 1,
-                'properties' => json_encode([
-                    'base_price' => 14.99,
-                    'pasta_options' => [
-                        ['name' => 'Spaghetti', 'price' => 0],
-                        ['name' => 'Penne', 'price' => 0],
-                        ['name' => 'Gluten-Free Pasta', 'price' => 2],
-                    ],
-                    'sauce_options' => [
-                        ['name' => 'Marinara', 'price' => 0],
-                        ['name' => 'Alfredo', 'price' => 2],
-                        ['name' => 'Pesto', 'price' => 2],
-                    ],
-                    'protein_options' => [
-                        ['name' => 'Grilled Chicken', 'price' => 4],
-                        ['name' => 'Shrimp', 'price' => 6],
-                        ['name' => 'Plant-Based Protein', 'price' => 4],
-                    ],
-                ]),
-                'photo_path' => 'custom/pasta.jpg',
-                'is_available' => true,
-                'order' => 1,
-                'tags' => ['Popular']
-            ],
-            // Add more customizable items...
-        ];
-
-        $this->insertMenuItems($customItems, $tags);
-    }
-
-    private function insertMenuItems(array $items, array $tags): void
-    {
-        foreach ($items as $item) {
-            $itemTags = $item['tags'] ?? [];
-            unset($item['tags']);
-
-            $entryId = DB::table('menu_entries')->insertGetId([
-                ...$item,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ]);
-
-            // Attach tags without timestamps
-            foreach ($itemTags as $tagName) {
-                if (isset($tags[$tagName])) {
-                    DB::table('menu_entry_tag')->insert([
-                        'menu_entry_id' => $entryId,
-                        'tag_id' => $tags[$tagName],
+        foreach ($types as $type) {
+            switch ($type->code) {
+                case 'size':
+                    $this->insertOptionValues($type->id, [
+                        ['code' => 'small', 'name' => 'Small', 'price_adjustment' => 0],
+                        ['code' => 'medium', 'name' => 'Medium', 'price_adjustment' => 1],
+                        ['code' => 'large', 'name' => 'Large', 'price_adjustment' => 2],
                     ]);
-                }
+                    break;
+                case 'temp':
+                    $this->insertOptionValues($type->id, [
+                        ['code' => 'hot', 'name' => 'Hot', 'price_adjustment' => 0],
+                        ['code' => 'iced', 'name' => 'Iced', 'price_adjustment' => 0],
+                    ]);
+                    break;
+                case 'milk':
+                    $this->insertOptionValues($type->id, [
+                        ['code' => 'whole', 'name' => 'Whole Milk', 'price_adjustment' => 0],
+                        ['code' => 'skim', 'name' => 'Skim Milk', 'price_adjustment' => 0],
+                        ['code' => 'oat', 'name' => 'Oat Milk', 'price_adjustment' => 1],
+                        ['code' => 'almond', 'name' => 'Almond Milk', 'price_adjustment' => 1],
+                    ]);
+                    break;
+                    // Add more cases for other option types...
             }
+        }
+    }
+
+    private function createMenuEntries(): void
+    {
+        // Root Categories
+        $this->createEntry('beverages', 'Beverages', null, 1);
+        $this->createEntry('food', 'Food', null, 2);
+
+        // Beverage Categories
+        $this->createEntry('beverages.hot', 'Hot Drinks', null, 1);
+        $this->createEntry('beverages.cold', 'Cold Drinks', null, 2);
+        $this->createEntry('beverages.smoothies', 'Smoothies', null, 3);
+
+        // Hot Drinks
+        $this->createEntry('beverages.hot.coffee', 'Coffee', null, 1);
+        $this->createEntry('beverages.hot.tea', 'Tea', null, 2);
+
+        // Coffee Items
+        $this->createEntry('beverages.hot.coffee.espresso', 'Espresso', 3.50, 1);
+        $this->createEntry('beverages.hot.coffee.latte', 'Latte', 4.50, 2);
+        $this->createEntry('beverages.hot.coffee.cappuccino', 'Cappuccino', 4.50, 3);
+        $this->createEntry('beverages.hot.coffee.americano', 'Americano', 3.75, 4);
+
+        // Coffee Modifiers
+        $this->createEntry('beverages.hot.coffee.latte/+size.small', 'Small', 0, 1);
+        $this->createEntry('beverages.hot.coffee.latte/+size.medium', 'Medium', 0.75, 2);
+        $this->createEntry('beverages.hot.coffee.latte/+size.large', 'Large', 1.50, 3);
+        $this->createEntry('beverages.hot.coffee.latte/+milk.whole', 'Whole Milk', 0, 1);
+        $this->createEntry('beverages.hot.coffee.latte/+milk.oat', 'Oat Milk', 1, 2);
+
+        // Tea Items
+        $this->createEntry('beverages.hot.tea.green', 'Green Tea', 3.00, 1);
+        $this->createEntry('beverages.hot.tea.earl_grey', 'Earl Grey', 3.00, 2);
+        $this->createEntry('beverages.hot.tea.chai_latte', 'Chai Latte', 4.50, 3);
+
+        // Cold Drinks
+        $this->createEntry('beverages.cold.iced_coffee', 'Iced Coffee', 4.00, 1);
+        $this->createEntry('beverages.cold.cold_brew', 'Cold Brew', 4.50, 2);
+        $this->createEntry('beverages.cold.iced_tea', 'Iced Tea', 3.50, 3);
+
+        // Food Categories
+        $this->createEntry('food.breakfast', 'Breakfast', null, 1);
+        $this->createEntry('food.lunch', 'Lunch', null, 2);
+        $this->createEntry('food.pastries', 'Pastries', null, 3);
+
+        // Breakfast Items
+        $this->createEntry('food.breakfast.eggs_benedict', 'Eggs Benedict', 12.99, 1);
+        $this->createEntry('food.breakfast.avocado_toast', 'Avocado Toast', 9.99, 2);
+        $this->createEntry('food.breakfast.pancakes', 'Pancakes', 10.99, 3);
+
+        // Breakfast Modifiers
+        $this->createEntry('food.breakfast.eggs_benedict/+protein.ham', 'Ham', 0, 1);
+        $this->createEntry('food.breakfast.eggs_benedict/+protein.salmon', 'Salmon', 3, 2);
+        $this->createEntry('food.breakfast.pancakes/+toppings.berries', 'Mixed Berries', 2, 1);
+        $this->createEntry('food.breakfast.pancakes/+toppings.chocolate', 'Chocolate Chips', 1.50, 2);
+
+        // Continue with more categories, items, and modifiers...
+    }
+
+    private function createEntry(string $path, string $name, ?float $price, int $position): void
+    {
+        DB::table('menu_entries')->insert([
+            'path' => $path,
+            'name' => $name,
+            'description' => "Description for $name",
+            'price' => $price,
+            'menu_id' => 1, // Assuming we're working with menu ID 1
+            'position' => $position,
+            'is_active' => true,
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
+        ]);
+    }
+
+    private function insertOptionValues(int $typeId, array $values): void
+    {
+        foreach ($values as $value) {
+            DB::table('menu_option_values')->insert([
+                'menu_option_type_id' => $typeId,
+                'code' => $value['code'],
+                'name' => $value['name'],
+                'price_adjustment' => $value['price_adjustment'],
+                'order' => 0,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
         }
     }
 }

@@ -1,0 +1,440 @@
+[
+  {
+    "id": 1,
+    "path": "beverages",
+    "name": "Beverages",
+    "description": "Description for Beverages",
+    "price": null,
+    "position": 1,
+    "is_active": true,
+    "depth": 1,
+    "type": "category",
+    "tags": [],
+    "items": [
+      {
+        "id": 3,
+        "path": "beverages.hot",
+        "name": "Hot Drinks",
+        "description": "Description for Hot Drinks",
+        "price": null,
+        "position": 1,
+        "is_active": true,
+        "depth": 2,
+        "type": "category",
+        "tags": [],
+        "items": [
+          {
+            "id": 6,
+            "path": "beverages.hot.coffee",
+            "name": "Coffee",
+            "description": "Description for Coffee",
+            "price": null,
+            "position": 1,
+            "is_active": true,
+            "depth": 3,
+            "type": "category",
+            "tags": [],
+            "items": [
+              {
+                "id": 8,
+                "path": "beverages.hot.coffee.espresso",
+                "name": "Espresso",
+                "description": "Description for Espresso",
+                "price": "3.50",
+                "position": 1,
+                "is_active": true,
+                "depth": 4,
+                "type": "category",
+                "tags": [],
+                "items": [],
+                "modifiers": []
+              },
+              {
+                "id": 9,
+                "path": "beverages.hot.coffee.latte",
+                "name": "Latte",
+                "description": "Description for Latte",
+                "price": "4.50",
+                "position": 2,
+                "is_active": true,
+                "depth": 4,
+                "type": "category",
+                "tags": [],
+                "items": [],
+                "modifiers": [
+                  {
+                    "id": 12,
+                    "path": "beverages.hot.coffee.latte/+size.small",
+                    "name": "Small",
+                    "description": "Description for Small",
+                    "price": "0.00",
+                    "position": 1,
+                    "is_active": true,
+                    "depth": 5,
+                    "type": "item",
+                    "tags": []
+                  },
+                  {
+                    "id": 15,
+                    "path": "beverages.hot.coffee.latte/+milk.whole",
+                    "name": "Whole Milk",
+                    "description": "Description for Whole Milk",
+                    "price": "0.00",
+                    "position": 1,
+                    "is_active": true,
+                    "depth": 5,
+                    "type": "item",
+                    "tags": []
+                  },
+                  {
+                    "id": 13,
+                    "path": "beverages.hot.coffee.latte/+size.medium",
+                    "name": "Medium",
+                    "description": "Description for Medium",
+                    "price": "0.75",
+                    "position": 2,
+                    "is_active": true,
+                    "depth": 5,
+                    "type": "item",
+                    "tags": []
+                  },
+                  {
+                    "id": 16,
+                    "path": "beverages.hot.coffee.latte/+milk.oat",
+                    "name": "Oat Milk",
+                    "description": "Description for Oat Milk",
+                    "price": "1.00",
+                    "position": 2,
+                    "is_active": true,
+                    "depth": 5,
+                    "type": "item",
+                    "tags": []
+                  },
+                  {
+                    "id": 14,
+                    "path": "beverages.hot.coffee.latte/+size.large",
+                    "name": "Large",
+                    "description": "Description for Large",
+                    "price": "1.50",
+                    "position": 3,
+                    "is_active": true,
+                    "depth": 5,
+                    "type": "item",
+                    "tags": []
+                  }
+                ]
+              },
+              {
+                "id": 10,
+                "path": "beverages.hot.coffee.cappuccino",
+                "name": "Cappuccino",
+                "description": "Description for Cappuccino",
+                "price": "4.50",
+                "position": 3,
+                "is_active": true,
+                "depth": 4,
+                "type": "category",
+                "tags": [],
+                "items": [],
+                "modifiers": []
+              },
+              {
+                "id": 11,
+                "path": "beverages.hot.coffee.americano",
+                "name": "Americano",
+                "description": "Description for Americano",
+                "price": "3.75",
+                "position": 4,
+                "is_active": true,
+                "depth": 4,
+                "type": "category",
+                "tags": [],
+                "items": [],
+                "modifiers": []
+              }
+            ],
+            "modifiers": []
+          },
+          {
+            "id": 7,
+            "path": "beverages.hot.tea",
+            "name": "Tea",
+            "description": "Description for Tea",
+            "price": null,
+            "position": 2,
+            "is_active": true,
+            "depth": 3,
+            "type": "category",
+            "tags": [],
+            "items": [
+              {
+                "id": 17,
+                "path": "beverages.hot.tea.green",
+                "name": "Green Tea",
+                "description": "Description for Green Tea",
+                "price": "3.00",
+                "position": 1,
+                "is_active": true,
+                "depth": 4,
+                "type": "category",
+                "tags": [],
+                "items": [],
+                "modifiers": []
+              },
+              {
+                "id": 18,
+                "path": "beverages.hot.tea.earl_grey",
+                "name": "Earl Grey",
+                "description": "Description for Earl Grey",
+                "price": "3.00",
+                "position": 2,
+                "is_active": true,
+                "depth": 4,
+                "type": "category",
+                "tags": [],
+                "items": [],
+                "modifiers": []
+              },
+              {
+                "id": 19,
+                "path": "beverages.hot.tea.chai_latte",
+                "name": "Chai Latte",
+                "description": "Description for Chai Latte",
+                "price": "4.50",
+                "position": 3,
+                "is_active": true,
+                "depth": 4,
+                "type": "category",
+                "tags": [],
+                "items": [],
+                "modifiers": []
+              }
+            ],
+            "modifiers": []
+          }
+        ],
+        "modifiers": []
+      },
+      {
+        "id": 4,
+        "path": "beverages.cold",
+        "name": "Cold Drinks",
+        "description": "Description for Cold Drinks",
+        "price": null,
+        "position": 2,
+        "is_active": true,
+        "depth": 2,
+        "type": "category",
+        "tags": [],
+        "items": [
+          {
+            "id": 20,
+            "path": "beverages.cold.iced_coffee",
+            "name": "Iced Coffee",
+            "description": "Description for Iced Coffee",
+            "price": "4.00",
+            "position": 1,
+            "is_active": true,
+            "depth": 3,
+            "type": "category",
+            "tags": [],
+            "items": [],
+            "modifiers": []
+          },
+          {
+            "id": 21,
+            "path": "beverages.cold.cold_brew",
+            "name": "Cold Brew",
+            "description": "Description for Cold Brew",
+            "price": "4.50",
+            "position": 2,
+            "is_active": true,
+            "depth": 3,
+            "type": "category",
+            "tags": [],
+            "items": [],
+            "modifiers": []
+          },
+          {
+            "id": 22,
+            "path": "beverages.cold.iced_tea",
+            "name": "Iced Tea",
+            "description": "Description for Iced Tea",
+            "price": "3.50",
+            "position": 3,
+            "is_active": true,
+            "depth": 3,
+            "type": "category",
+            "tags": [],
+            "items": [],
+            "modifiers": []
+          }
+        ],
+        "modifiers": []
+      },
+      {
+        "id": 5,
+        "path": "beverages.smoothies",
+        "name": "Smoothies",
+        "description": "Description for Smoothies",
+        "price": null,
+        "position": 3,
+        "is_active": true,
+        "depth": 2,
+        "type": "category",
+        "tags": [],
+        "items": [],
+        "modifiers": []
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "path": "food",
+    "name": "Food",
+    "description": "Description for Food",
+    "price": null,
+    "position": 2,
+    "is_active": true,
+    "depth": 1,
+    "type": "category",
+    "tags": [],
+    "items": [
+      {
+        "id": 23,
+        "path": "food.breakfast",
+        "name": "Breakfast",
+        "description": "Description for Breakfast",
+        "price": null,
+        "position": 1,
+        "is_active": true,
+        "depth": 2,
+        "type": "category",
+        "tags": [],
+        "items": [
+          {
+            "id": 26,
+            "path": "food.breakfast.eggs_benedict",
+            "name": "Eggs Benedict",
+            "description": "Description for Eggs Benedict",
+            "price": "12.99",
+            "position": 1,
+            "is_active": true,
+            "depth": 3,
+            "type": "category",
+            "tags": [],
+            "items": [],
+            "modifiers": [
+              {
+                "id": 29,
+                "path": "food.breakfast.eggs_benedict/+protein.ham",
+                "name": "Ham",
+                "description": "Description for Ham",
+                "price": "0.00",
+                "position": 1,
+                "is_active": true,
+                "depth": 4,
+                "type": "item",
+                "tags": []
+              },
+              {
+                "id": 30,
+                "path": "food.breakfast.eggs_benedict/+protein.salmon",
+                "name": "Salmon",
+                "description": "Description for Salmon",
+                "price": "3.00",
+                "position": 2,
+                "is_active": true,
+                "depth": 4,
+                "type": "item",
+                "tags": []
+              }
+            ]
+          },
+          {
+            "id": 27,
+            "path": "food.breakfast.avocado_toast",
+            "name": "Avocado Toast",
+            "description": "Description for Avocado Toast",
+            "price": "9.99",
+            "position": 2,
+            "is_active": true,
+            "depth": 3,
+            "type": "category",
+            "tags": [],
+            "items": [],
+            "modifiers": []
+          },
+          {
+            "id": 28,
+            "path": "food.breakfast.pancakes",
+            "name": "Pancakes",
+            "description": "Description for Pancakes",
+            "price": "10.99",
+            "position": 3,
+            "is_active": true,
+            "depth": 3,
+            "type": "category",
+            "tags": [],
+            "items": [],
+            "modifiers": [
+              {
+                "id": 31,
+                "path": "food.breakfast.pancakes/+toppings.berries",
+                "name": "Mixed Berries",
+                "description": "Description for Mixed Berries",
+                "price": "2.00",
+                "position": 1,
+                "is_active": true,
+                "depth": 4,
+                "type": "item",
+                "tags": []
+              },
+              {
+                "id": 32,
+                "path": "food.breakfast.pancakes/+toppings.chocolate",
+                "name": "Chocolate Chips",
+                "description": "Description for Chocolate Chips",
+                "price": "1.50",
+                "position": 2,
+                "is_active": true,
+                "depth": 4,
+                "type": "item",
+                "tags": []
+              }
+            ]
+          }
+        ],
+        "modifiers": []
+      },
+      {
+        "id": 24,
+        "path": "food.lunch",
+        "name": "Lunch",
+        "description": "Description for Lunch",
+        "price": null,
+        "position": 2,
+        "is_active": true,
+        "depth": 2,
+        "type": "category",
+        "tags": [],
+        "items": [],
+        "modifiers": []
+      },
+      {
+        "id": 25,
+        "path": "food.pastries",
+        "name": "Pastries",
+        "description": "Description for Pastries",
+        "price": null,
+        "position": 3,
+        "is_active": true,
+        "depth": 2,
+        "type": "category",
+        "tags": [],
+        "items": [],
+        "modifiers": []
+      }
+    ]
+  }
+]
