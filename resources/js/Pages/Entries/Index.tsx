@@ -71,7 +71,7 @@ export default function Index({ restaurant, menu, entries }: Props) {
     >
       <div className="container">
         <ResizablePanelGroup direction="horizontal">
-          <ResizablePanel defaultSize={50} minSize={20}>
+          <ResizablePanel defaultSize={50} minSize={30}>
             <MenuTree items={items} onItemsChange={handleItemsChange} />
           </ResizablePanel>
 

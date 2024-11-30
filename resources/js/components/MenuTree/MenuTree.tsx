@@ -6,7 +6,7 @@ import {
 } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 import { MenuItem } from '@/types';
-import { FolderOpen, Minus, UtensilsCrossed } from 'lucide-react';
+import { FolderOpen, Settings2, UtensilsCrossed } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import {
   StaticTreeDataProvider,
@@ -22,17 +22,26 @@ interface MenuTreeProps {
   onItemsChange?: (items: MenuItem[]) => void;
 }
 
-function getItemIcon(item: MenuItem) {
+function getItemIcon(item: MenuItem | TreeItem<MenuItem>) {
+  // Handle TreeItem<MenuItem>
+  if ('data' in item) {
+    item = item.data;
+  }
+
+  // Now item is definitely a MenuItem
   if (item.type === 'modifier') {
-    return <Minus className="size-4" />;
+    return <Settings2 className="size-4 text-muted-foreground" />;
   }
-  if (item.type === 'item') {
-    return <UtensilsCrossed className="size-4" />;
+
+  if (item.price && Number(item.price) > 0) {
+    return <UtensilsCrossed className="size-4 text-muted-foreground" />;
   }
-  if (item.type === 'category') {
-    return <FolderOpen className="size-4" />;
+
+  if (item.type === 'category' || (item.items && item.items.length > 0)) {
+    return <FolderOpen className="size-4 text-muted-foreground" />;
   }
-  return <FolderOpen className="size-4" />;
+
+  return <UtensilsCrossed className="size-4 text-muted-foreground" />;
 }
 
 function buildTreeItems(

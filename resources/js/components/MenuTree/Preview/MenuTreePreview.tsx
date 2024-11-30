@@ -28,7 +28,7 @@ export function MenuTreePreview({
   return (
     <div className="flex h-full flex-col">
       <ScrollArea className="flex-1">
-        <div className="mx-auto max-w-3xl p-8">
+        <div className="mx-auto max-w-3xl px-8 py-4">
           <div className="rounded-lg border bg-card p-8 shadow-sm">
             <MenuTreeHeader
               menuName={menuName}

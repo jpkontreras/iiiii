@@ -3,11 +3,7 @@ import { MenuItem } from '@/types';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { TreeItem, TreeRenderProps } from 'react-complex-tree';
 import { MenuItemContextMenu } from '../MenuItems/MenuItemContextMenu';
-import {
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-} from '../ui/sidebar';
+import { SidebarMenuButton, SidebarMenuItem } from '../ui/sidebar';
 
 interface MenuTreeRendererProps extends TreeRenderProps {
   item: TreeItem<MenuItem>;
@@ -54,17 +50,19 @@ function RenderItem({
   icon?: React.ReactNode;
 }) {
   return (
-    <>
-      {icon}
-      <div className="flex flex-1 items-center justify-between gap-4">
+    <div className="flex w-full items-center gap-2">
+      <div className="flex items-center gap-2">
+        <div className="flex w-4 items-center justify-center">{icon}</div>
         <span className="truncate">{item.data.name}</span>
-        {item.data.price && Number(item.data.price) > 0 && (
+      </div>
+      {item.data.price && Number(item.data.price) > 0 && (
+        <div className="ml-auto">
           <span className="shrink-0 text-sm tabular-nums text-muted-foreground">
             ${Number(item.data.price).toFixed(2)}
           </span>
-        )}
-      </div>
-    </>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -101,13 +99,11 @@ export function MenuTreeRenderer({
             size="default"
           >
             <RenderItemArrow item={item} context={context} />
-            <div className="flex w-full items-center gap-2">
-              <RenderItem item={item} icon={icon} />
-            </div>
+            <RenderItem item={item} icon={icon} />
           </SidebarMenuButton>
         </MenuItemContextMenu>
       </SidebarMenuItem>
-      {item.isFolder && children && <SidebarMenuSub>{children}</SidebarMenuSub>}
+      {item.isFolder && children && <>{children}</>}
     </>
   );
 }
