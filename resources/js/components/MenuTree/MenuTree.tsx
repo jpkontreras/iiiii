@@ -6,7 +6,7 @@ import {
 } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 import { MenuItem } from '@/types';
-import { Coffee, FolderOpen, UtensilsCrossed } from 'lucide-react';
+import { Coffee, FolderOpen, Minus, UtensilsCrossed } from 'lucide-react';
 import { useMemo } from 'react';
 import {
   StaticTreeDataProvider,
@@ -23,13 +23,19 @@ interface MenuTreeProps {
 }
 
 function getItemIcon(item: MenuItem) {
+  if (item.path.includes('/+')) {
+    return <Minus className="size-4" />;
+  }
+  if (item.price) {
+    return <UtensilsCrossed className="size-4" />;
+  }
   if (item.type === 'category') {
     return <FolderOpen className="size-4" />;
   }
   if (item.path.includes('beverages')) {
     return <Coffee className="size-4" />;
   }
-  return <UtensilsCrossed className="size-4" />;
+  return <FolderOpen className="size-4" />;
 }
 
 function buildTreeItems(
@@ -148,7 +154,8 @@ export function MenuTree({ items, onItemsChange }: MenuTreeProps) {
                 getItemTitle={(item) => item.data.name}
                 viewState={{
                   ['menu-tree']: {
-                    expandedItems: allPaths, // Pre-expand all items
+                    expandedItems: allPaths,
+                    selectedItems: [],
                   },
                 }}
                 canDragAndDrop
@@ -166,7 +173,7 @@ export function MenuTree({ items, onItemsChange }: MenuTreeProps) {
                 renderItemsContainer={({ children, containerProps }) => (
                   <ul
                     {...containerProps}
-                    className={cn('flex flex-col gap-[2px] pl-3')}
+                    className={cn('flex flex-col gap-[2px] pl-1')}
                   >
                     {children}
                   </ul>
