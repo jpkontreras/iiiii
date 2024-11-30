@@ -6,8 +6,8 @@ import {
 } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 import { MenuItem } from '@/types';
-import { Coffee, FolderOpen, Minus, UtensilsCrossed } from 'lucide-react';
-import { useMemo } from 'react';
+import { FolderOpen, Minus, UtensilsCrossed } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import {
   StaticTreeDataProvider,
   Tree,
@@ -23,17 +23,14 @@ interface MenuTreeProps {
 }
 
 function getItemIcon(item: MenuItem) {
-  if (item.path.includes('/+')) {
+  if (item.type === 'modifier') {
     return <Minus className="size-4" />;
   }
-  if (item.price) {
+  if (item.type === 'item') {
     return <UtensilsCrossed className="size-4" />;
   }
   if (item.type === 'category') {
     return <FolderOpen className="size-4" />;
-  }
-  if (item.path.includes('beverages')) {
-    return <Coffee className="size-4" />;
   }
   return <FolderOpen className="size-4" />;
 }
@@ -100,8 +97,8 @@ function buildTreeItems(
   Object.values(treeItems).forEach((treeItem) => {
     if (treeItem.children && treeItem.children.length > 0) {
       treeItem.children.sort((a, b) => {
-        const itemA = treeItems[a].data;
-        const itemB = treeItems[b].data;
+        const itemA = treeItems[a].data as MenuItem;
+        const itemB = treeItems[b].data as MenuItem;
         return (itemA.position || 0) - (itemB.position || 0);
       });
     }
@@ -112,36 +109,16 @@ function buildTreeItems(
 
 export function MenuTree({ items, onItemsChange }: MenuTreeProps) {
   const treeItems = useMemo(() => buildTreeItems(items), [items]);
-  console.log({ treeItems });
+  const [expandedItems, setExpandedItems] = useState<TreeItemIndex[]>(['root']);
 
   const dataProvider = useMemo(
     () =>
       new StaticTreeDataProvider(treeItems, (item, data) => ({
         ...item,
-        data,
+        data: data as MenuItem,
       })),
     [treeItems],
   );
-
-  // Get all paths to pre-expand
-  const allPaths = useMemo(() => {
-    const paths = new Set<string>(['root']);
-
-    function collectPaths(item: MenuItem) {
-      if (item.path) {
-        paths.add(item.path);
-      }
-      if (item.items) {
-        item.items.forEach(collectPaths);
-      }
-      if (item.modifiers) {
-        item.modifiers.forEach(collectPaths);
-      }
-    }
-
-    items.forEach(collectPaths);
-    return Array.from(paths);
-  }, [items]);
 
   return (
     <div className="flex h-full flex-col">
@@ -154,26 +131,19 @@ export function MenuTree({ items, onItemsChange }: MenuTreeProps) {
                 getItemTitle={(item) => item.data.name}
                 viewState={{
                   ['menu-tree']: {
-                    expandedItems: allPaths,
-                    selectedItems: [],
+                    expandedItems,
                   },
                 }}
-                canDragAndDrop
-                canDropOnFolder
-                canReorderItems
                 renderItem={(props) => (
                   <MenuTreeRenderer
                     {...props}
                     icon={getItemIcon(props.item.data)}
-                    description={props.item.data.description}
-                    price={props.item.data.price}
-                    tags={props.item.data.tags}
                   />
                 )}
                 renderItemsContainer={({ children, containerProps }) => (
                   <ul
                     {...containerProps}
-                    className={cn('flex flex-col gap-[2px] pl-1')}
+                    className={cn('flex flex-col gap-[2px]')}
                   >
                     {children}
                   </ul>
@@ -183,11 +153,13 @@ export function MenuTree({ items, onItemsChange }: MenuTreeProps) {
                     {children}
                   </SidebarMenu>
                 )}
-                onExpandItem={({ item }) => {
-                  console.log('Expanding:', item);
+                onExpandItem={(item) => {
+                  setExpandedItems((prev) => [...prev, item.index]);
                 }}
-                onCollapseItem={({ item }) => {
-                  console.log('Collapsing:', item);
+                onCollapseItem={(item) => {
+                  setExpandedItems((prev) =>
+                    prev.filter((id) => id !== item.index),
+                  );
                 }}
               >
                 <Tree
