@@ -116,9 +116,34 @@ function buildTreeItems(
   return treeItems;
 }
 
+function getAllPaths(items: MenuItem[]): string[] {
+  const paths = new Set<string>(['root']);
+
+  function collectPaths(item: MenuItem) {
+    paths.add(item.path);
+
+    // Collect paths from regular items
+    if (item.items) {
+      item.items.forEach(collectPaths);
+    }
+
+    // Collect paths from modifiers
+    if (item.modifiers) {
+      item.modifiers.forEach(collectPaths);
+    }
+  }
+
+  items.forEach(collectPaths);
+  return Array.from(paths);
+}
+
 export function MenuTree({ items, onItemsChange }: MenuTreeProps) {
   const treeItems = useMemo(() => buildTreeItems(items), [items]);
-  const [expandedItems, setExpandedItems] = useState<TreeItemIndex[]>(['root']);
+
+  // Initialize with all paths expanded
+  const [expandedItems, setExpandedItems] = useState<TreeItemIndex[]>(() =>
+    getAllPaths(items),
+  );
 
   const dataProvider = useMemo(
     () =>
@@ -130,57 +155,50 @@ export function MenuTree({ items, onItemsChange }: MenuTreeProps) {
   );
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex-1">
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <UncontrolledTreeEnvironment
-                dataProvider={dataProvider}
-                getItemTitle={(item) => item.data.name}
-                viewState={{
-                  ['menu-tree']: {
-                    expandedItems,
-                  },
-                }}
-                renderItem={(props) => (
-                  <MenuTreeRenderer
-                    {...props}
-                    icon={getItemIcon(props.item.data)}
-                  />
-                )}
-                renderItemsContainer={({ children, containerProps }) => (
-                  <ul
-                    {...containerProps}
-                    className={cn('flex flex-col gap-[2px]')}
-                  >
-                    {children}
-                  </ul>
-                )}
-                renderTreeContainer={({ children, containerProps }) => (
-                  <SidebarMenu {...containerProps} className="gap-[2px]">
-                    {children}
-                  </SidebarMenu>
-                )}
-                onExpandItem={(item) => {
-                  setExpandedItems((prev) => [...prev, item.index]);
-                }}
-                onCollapseItem={(item) => {
-                  setExpandedItems((prev) =>
-                    prev.filter((id) => id !== item.index),
-                  );
-                }}
-              >
-                <Tree
-                  treeId="menu-tree"
-                  rootItem="root"
-                  treeLabel="Menu Structure"
-                />
-              </UncontrolledTreeEnvironment>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
-      </div>
-    </div>
+    <SidebarContent>
+      <SidebarGroup>
+        <SidebarGroupContent>
+          <UncontrolledTreeEnvironment
+            dataProvider={dataProvider}
+            getItemTitle={(item) => item.data.name}
+            viewState={{
+              ['menu-tree']: {
+                expandedItems,
+              },
+            }}
+            renderItem={(props) => (
+              <MenuTreeRenderer
+                {...props}
+                icon={getItemIcon(props.item.data)}
+              />
+            )}
+            renderItemsContainer={({ children, containerProps }) => (
+              <ul {...containerProps} className={cn('flex flex-col gap-[2px]')}>
+                {children}
+              </ul>
+            )}
+            renderTreeContainer={({ children, containerProps }) => (
+              <SidebarMenu {...containerProps} className="gap-[2px]">
+                {children}
+              </SidebarMenu>
+            )}
+            onExpandItem={(item) => {
+              setExpandedItems((prev) => [...prev, item.index]);
+            }}
+            onCollapseItem={(item) => {
+              setExpandedItems((prev) =>
+                prev.filter((id) => id !== item.index),
+              );
+            }}
+          >
+            <Tree
+              treeId="menu-tree"
+              rootItem="root"
+              treeLabel="Menu Structure"
+            />
+          </UncontrolledTreeEnvironment>
+        </SidebarGroupContent>
+      </SidebarGroup>
+    </SidebarContent>
   );
 }

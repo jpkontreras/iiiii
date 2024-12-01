@@ -35,8 +35,6 @@ export default function Index({ restaurant, menu, entries }: Props) {
   const [items, setItems] = useState<MenuItem[]>(entries);
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
 
-  console.log({ entries });
-
   const handleItemsChange = (newItems: MenuItem[]) => {
     setItems(newItems);
   };

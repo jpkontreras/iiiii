@@ -73,7 +73,20 @@ final class MenuEntry extends Model
   public function formatForDisplay(): array
   {
     $pathParts = explode('.', $this->path);
-    $isCategory = !str_contains($this->path, '/');
+    $isModifier = str_contains($this->path, '/+');
+
+    // Check for descendants
+    $hasChildren = static::where('path', 'like', $this->path . '.%')
+      ->orWhere('path', 'like', $this->path . '/+%')
+      ->exists();
+
+    // Determine type based on path and descendants
+    $type = match (true) {
+      $isModifier => 'modifier',
+      $hasChildren => 'category',
+      default => 'item'
+    };
+
     $baseData = [
       'id' => $this->id,
       'path' => $this->path,
@@ -83,11 +96,12 @@ final class MenuEntry extends Model
       'position' => $this->position,
       'is_active' => $this->is_active,
       'depth' => count($pathParts),
-      'type' => $isCategory ? 'category' : 'item',
+      'type' => $type,
       'tags' => $this->formatTags()
     ];
 
-    if ($isCategory) {
+    // Only add children arrays if it actually has descendants
+    if ($hasChildren && !$isModifier) {
       $baseData['items'] = static::where('path', 'like', $this->path . '.%')
         ->where('path', 'not like', $this->path . '.%.%') // Only immediate children
         ->where('path', 'not like', '%/%') // Exclude modifiers
@@ -103,7 +117,7 @@ final class MenuEntry extends Model
           return $itemData;
         })
         ->toArray();
-    } else if (!str_contains($this->path, '/+')) {
+    } else if (!$isModifier) {
       $baseData['modifiers'] = static::where('path', 'like', $this->path . '/+%')
         ->orderBy('position')
         ->get()
