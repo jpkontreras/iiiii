@@ -24,7 +24,7 @@ export interface MenuItem {
   position: number;
   is_active: boolean;
   depth: number;
-  type: 'category' | 'item' | 'modifier';
+  type: 'category' | 'item' | 'modifier' | 'option';
   tags: Tag[];
   items?: MenuItem[];
   modifiers?: MenuItem[];

@@ -15,6 +15,7 @@ enum MenuItemType {
   CATEGORY = 'category',
   ITEM = 'item',
   OPTION = 'option',
+  MODIFIER = 'modifier',
 }
 
 // Update the MenuItem type to include the type field
@@ -33,6 +34,9 @@ interface MenuTreeRendererProps extends TreeRenderProps {
     arrowProps: React.HTMLAttributes<HTMLDivElement>;
     itemContainerWithoutChildrenProps: React.HTMLAttributes<HTMLElement>;
     interactiveElementProps: React.HTMLAttributes<HTMLElement>;
+    treeId: string;
+    getItemTitle: (item: TreeItem<any>) => string;
+    getItem: (itemId: string | number) => TreeItem<any>;
   };
   depth: number;
   children?: React.ReactNode;
@@ -44,7 +48,6 @@ interface RenderItemProps {
 }
 
 function RenderItemArrow({ item, context }: RenderItemProps) {
-  // Only categories should have arrows
   if (item.data.type !== MenuItemType.CATEGORY) return null;
 
   return (
@@ -68,6 +71,10 @@ function getItemIcon(type: MenuItemType) {
     case MenuItemType.ITEM:
       return <Utensils className="size-4" />;
     case MenuItemType.OPTION:
+      return <Settings className="size-4 text-muted-foreground" />;
+    case MenuItemType.MODIFIER:
+      return <Settings className="size-4 rotate-45 text-muted-foreground" />;
+    default:
       return <Settings className="size-4" />;
   }
 }
@@ -92,20 +99,99 @@ function getItemStyle(depth: number, type: MenuItemType) {
   }
 }
 
+function getItemCount(item: TreeItem<EnhancedMenuItem>): {
+  count: number;
+  type: 'items' | 'options' | 'categories';
+} {
+  if (!item.children?.length) return { count: 0, type: 'items' };
+
+  switch (item.data.type) {
+    case MenuItemType.CATEGORY:
+      return { count: item.children.length, type: 'categories' };
+    case MenuItemType.ITEM:
+      return { count: item.children.length, type: 'options' };
+    default:
+      return { count: 0, type: 'items' };
+  }
+}
+
+function hasModifiers(item: TreeItem<EnhancedMenuItem>): boolean {
+  if (!item.children?.length) return false;
+  return item.children.some((childId) => {
+    const child = item.context?.getItem(childId);
+    return (
+      child?.data.type === MenuItemType.MODIFIER ||
+      child?.data.type === MenuItemType.OPTION
+    );
+  });
+}
+
+function RenderCompositeIcon({
+  type,
+  hasModifiers,
+}: {
+  type: MenuItemType;
+  hasModifiers: boolean;
+}) {
+  if (type === MenuItemType.CATEGORY && hasModifiers) {
+    return (
+      <div className="relative flex size-4 items-center justify-center">
+        <Folder className="size-4" />
+        <Utensils className="absolute bottom-0 right-0 size-2.5 text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex size-4 items-center justify-center">
+      {getItemIcon(type)}
+    </div>
+  );
+}
+
+function RenderItemIcon({
+  item,
+  context,
+}: {
+  item: TreeItem<EnhancedMenuItem>;
+  context: MenuTreeRendererProps['context'];
+}) {
+  const { count, type } = getItemCount(item);
+  const showComposite =
+    item.data.type === MenuItemType.CATEGORY && hasModifiers(item);
+
+  return (
+    <div className="flex items-center gap-1">
+      <RenderCompositeIcon type={item.data.type} hasModifiers={showComposite} />
+      {count > 0 && (
+        <span
+          className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-muted px-1 text-[10px] tabular-nums text-muted-foreground"
+          title={`${count} ${type}`}
+        >
+          {count}
+        </span>
+      )}
+    </div>
+  );
+}
+
 function RenderItem({
   item,
   depth,
+  isExpanded,
+  context,
 }: {
   item: TreeItem<EnhancedMenuItem>;
   depth: number;
+  isExpanded: boolean;
+  context: MenuTreeRendererProps['context'];
 }) {
   const itemStyle = getItemStyle(depth, item.data.type);
-  const icon = getItemIcon(item.data.type);
 
   return (
     <div className="flex w-full items-center gap-2">
       <div className="flex items-center gap-2">
-        <div className="flex w-4 items-center justify-center">{icon}</div>
+        <RenderItemIcon item={item} context={context} />
         <span className="truncate" style={itemStyle}>
           {item.data.name}
         </span>
@@ -197,7 +283,12 @@ export function MenuTreeRenderer({
           size="default"
         >
           <RenderItemArrow item={item} context={context} />
-          <RenderItem item={item} depth={depth} />
+          <RenderItem
+            item={item}
+            depth={depth}
+            isExpanded={context.isExpanded}
+            context={context}
+          />
         </SidebarMenuButton>
       </SidebarMenuItem>
       {item.data.type === MenuItemType.CATEGORY && children && <>{children}</>}
