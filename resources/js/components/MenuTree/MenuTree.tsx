@@ -115,13 +115,13 @@ function getAllPaths(items: MenuItem[]): string[] {
 }
 
 export function MenuTree({ items, onItemsChange }: MenuTreeProps) {
-  const treeItems = useMemo(() => buildTreeItems(items), [items]);
   console.log({ items });
 
-  // Initialize with all paths expanded
+  const treeItems = useMemo(() => buildTreeItems(items), [items]);
   const [expandedItems, setExpandedItems] = useState<TreeItemIndex[]>(() =>
     getAllPaths(items),
   );
+  const [selectedItems, setSelectedItems] = useState<TreeItemIndex[]>([]);
 
   const dataProvider = useMemo(
     () =>
@@ -142,9 +142,12 @@ export function MenuTree({ items, onItemsChange }: MenuTreeProps) {
             viewState={{
               ['menu-tree']: {
                 expandedItems,
+                selectedItems,
               },
             }}
-            renderItem={(props) => <MenuTreeRenderer {...props} />}
+            renderItem={(props) => (
+              <MenuTreeRenderer {...props} selectedItem={selectedItems[0]} />
+            )}
             renderItemsContainer={({ children, containerProps }) => (
               <ul {...containerProps} className={cn('flex flex-col gap-[2px]')}>
                 {children}
@@ -162,6 +165,9 @@ export function MenuTree({ items, onItemsChange }: MenuTreeProps) {
               setExpandedItems((prev) =>
                 prev.filter((id) => id !== item.index),
               );
+            }}
+            onSelectItems={(items) => {
+              setSelectedItems(items);
             }}
           >
             <Tree

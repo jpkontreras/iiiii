@@ -6,14 +6,29 @@ import {
   Ellipsis,
   Folder,
   FolderOpen,
+  MoveVertical,
   Package,
   PackageOpen,
+  Plus,
   Settings,
+  Trash2,
   Utensils,
 } from 'lucide-react';
+import { useState } from 'react';
 import { TreeItem, TreeRenderProps } from 'react-complex-tree';
+import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '../ui/collapsible';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { ScrollArea } from '../ui/scroll-area';
 import { SidebarMenuButton, SidebarMenuItem } from '../ui/sidebar';
+import { Textarea } from '../ui/textarea';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 
 // Add an enum to strictly type the menu item types
 enum MenuItemType {
@@ -46,6 +61,7 @@ interface MenuTreeRendererProps extends TreeRenderProps {
   };
   depth: number;
   children?: React.ReactNode;
+  selectedItem?: TreeItem<EnhancedMenuItem>;
 }
 
 interface RenderItemProps {
@@ -267,6 +283,23 @@ function RenderItem({
 }) {
   const itemStyle = getItemStyle(depth, item.data.type);
   const { basePrice, modifiersTotal } = getItemPrice(item, context);
+  const isModifierGroup =
+    item.data.type === MenuItemType.MODIFIER &&
+    item.children &&
+    item.children.length > 0;
+
+  // If this is a modifier group header, render it differently
+  if (isModifierGroup) {
+    return (
+      <div className="flex w-full flex-col gap-1">
+        <div className="flex items-center gap-2 border-b border-border/50 pb-1">
+          <span className="text-xs font-medium text-muted-foreground">
+            {getModifierGroupLabel(item.data.path)}
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex w-full items-center justify-between gap-2">
@@ -300,14 +333,253 @@ function getBackgroundColor(depth: number) {
   }
 }
 
+// Add this interface for the operations
+interface SpecialItemRowProps {
+  item: TreeItem<EnhancedMenuItem>;
+  depth: number;
+}
+
+// Add this type for the form
+interface ItemFormData {
+  name: string;
+  price: string | null;
+  description: string | null;
+}
+
+// Add this helper function
+function formatPath(path: string) {
+  return path.split('/').filter(Boolean).join(' → ');
+}
+
+// Add this helper function to get a friendly item type label
+function getItemTypeLabel(type: MenuItemType) {
+  switch (type) {
+    case MenuItemType.CATEGORY:
+      return 'Category';
+    case MenuItemType.COMPOSITE:
+      return 'Combo';
+    case MenuItemType.ITEM:
+      return 'Item';
+    case MenuItemType.OPTION:
+      return 'Option';
+    case MenuItemType.MODIFIER:
+      return 'Modifier';
+    default:
+      return type;
+  }
+}
+
+// Add this helper to get the modifier group label
+function getModifierGroupLabel(path: string) {
+  const parts = path.split('/');
+  const modifierType = parts[parts.length - 2]; // Get the parent segment
+  return modifierType === 'size' ? 'Size Options' : 'Add-ons';
+}
+
+// Replace the existing SpecialItemRow with this enhanced version
+function SpecialItemRow({ item, depth }: SpecialItemRowProps) {
+  const [formData, setFormData] = useState<ItemFormData>({
+    name: item.data.name,
+    price: item.data.price?.toString() ?? null,
+    description: item.data.description,
+  });
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const canAddChild =
+    depth < 3 && ['category', 'composite', 'item'].includes(item.data.type);
+  const canEdit = true;
+  const canDelete = depth > 0;
+  const canMove = depth > 0;
+
+  const handleAdd = () => {
+    const newItemType = item.data.type === 'item' ? 'option' : 'item';
+    console.log('Add new', newItemType, 'under', item.data.name);
+  };
+
+  const handleSave = () => {
+    console.log('Save', formData);
+  };
+
+  const formattedPath = formatPath(item.data.path);
+
+  return (
+    <div className="flex flex-col bg-muted/30">
+      <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
+        {/* Header with Item Info and Quick Actions */}
+        <div className="relative flex items-center justify-between gap-2 border-b border-border/50 px-4 py-2">
+          {/* Visual connector to the item */}
+          <div
+            className="absolute -top-px left-[24px] h-[2px] w-4 bg-border"
+            style={{ left: `${(depth + 1) * 20}px` }}
+          />
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-2 truncate text-xs text-muted-foreground">
+                <Badge
+                  variant={
+                    item.data.type === 'category' ? 'default' : 'secondary'
+                  }
+                  className="shrink-0"
+                >
+                  {getItemTypeLabel(item.data.type)}
+                </Badge>
+                <span className="truncate font-medium">{item.data.name}</span>
+                {item.data.price && (
+                  <span className="shrink-0 tabular-nums">
+                    ${Number(item.data.price).toFixed(2)}
+                  </span>
+                )}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent
+              side="bottom"
+              align="start"
+              className="flex flex-col gap-1"
+            >
+              <div className="flex items-center gap-2">
+                <Badge
+                  variant={
+                    item.data.type === 'category' ? 'default' : 'secondary'
+                  }
+                >
+                  {getItemTypeLabel(item.data.type)}
+                </Badge>
+                <span className="font-medium">{item.data.name}</span>
+                {item.data.price && (
+                  <span className="tabular-nums">
+                    ${Number(item.data.price).toFixed(2)}
+                  </span>
+                )}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Path: {formatPath(item.data.path)}
+              </div>
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Quick Actions */}
+          <div className="flex items-center gap-1">
+            {canAddChild && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    onClick={handleAdd}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Add {item.data.type === 'item' ? 'option' : 'item'}
+                </TooltipContent>
+              </Tooltip>
+            )}
+            {canMove && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                    <MoveVertical className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Move {item.data.name}</TooltipContent>
+              </Tooltip>
+            )}
+            {canDelete && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 hover:bg-destructive/90 hover:text-destructive-foreground"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Delete {item.data.name}</TooltipContent>
+              </Tooltip>
+            )}
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                {isExpanded ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+              </Button>
+            </CollapsibleTrigger>
+          </div>
+        </div>
+
+        {/* Collapsible Form - Updated height and padding */}
+        <CollapsibleContent>
+          <ScrollArea className="h-[400px]">
+            <div className="flex flex-col gap-3 p-4">
+              <div className="grid gap-1.5">
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, name: e.target.value }))
+                  }
+                />
+              </div>
+
+              <div className="grid gap-1.5">
+                <Label htmlFor="price">Price</Label>
+                <Input
+                  id="price"
+                  type="number"
+                  step="0.01"
+                  value={formData.price ?? ''}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, price: e.target.value }))
+                  }
+                />
+              </div>
+
+              <div className="grid gap-1.5">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description ?? ''}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
+                  rows={3}
+                />
+              </div>
+
+              <div className="sticky bottom-0 bg-muted/30 pt-3">
+                <Button onClick={handleSave} className="w-full">
+                  Save Changes
+                </Button>
+              </div>
+            </div>
+          </ScrollArea>
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
+  );
+}
+
 export function MenuTreeRenderer({
   item,
   depth,
   context,
   children,
+  selectedItem,
   ...props
 }: MenuTreeRendererProps) {
   const bgColor = getBackgroundColor(depth);
+  const isItemSelected = context.isSelected;
+  const isExpanded = context.isExpanded;
 
   return (
     <>
@@ -315,7 +587,7 @@ export function MenuTreeRenderer({
         <SidebarMenuButton
           {...context.itemContainerWithoutChildrenProps}
           {...context.interactiveElementProps}
-          isActive={context.isSelected}
+          isActive={isItemSelected}
           className={cn(
             'group relative cursor-pointer py-3',
             'transition-all duration-200 hover:scale-x-[1.01] hover:bg-black/[0.05]',
@@ -337,6 +609,13 @@ export function MenuTreeRenderer({
           />
         </SidebarMenuButton>
       </SidebarMenuItem>
+
+      {isItemSelected && isExpanded && (
+        <div className="border-b border-gray-100">
+          <SpecialItemRow item={item} depth={depth} />
+        </div>
+      )}
+
       {[MenuItemType.CATEGORY, MenuItemType.COMPOSITE].includes(
         item.data.type,
       ) &&
