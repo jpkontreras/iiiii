@@ -3,16 +3,22 @@ import { MenuItem } from '@/types';
 import {
   ChevronDown,
   ChevronRight,
+  Ellipsis,
   Folder,
+  FolderOpen,
+  Package,
+  PackageOpen,
   Settings,
   Utensils,
 } from 'lucide-react';
 import { TreeItem, TreeRenderProps } from 'react-complex-tree';
+import { Button } from '../ui/button';
 import { SidebarMenuButton, SidebarMenuItem } from '../ui/sidebar';
 
 // Add an enum to strictly type the menu item types
 enum MenuItemType {
   CATEGORY = 'category',
+  COMPOSITE = 'composite',
   ITEM = 'item',
   OPTION = 'option',
   MODIFIER = 'modifier',
@@ -48,7 +54,8 @@ interface RenderItemProps {
 }
 
 function RenderItemArrow({ item, context }: RenderItemProps) {
-  if (item.data.type !== MenuItemType.CATEGORY) return null;
+  if (![MenuItemType.CATEGORY, MenuItemType.COMPOSITE].includes(item.data.type))
+    return null;
 
   return (
     <div
@@ -64,18 +71,43 @@ function RenderItemArrow({ item, context }: RenderItemProps) {
   );
 }
 
-function getItemIcon(type: MenuItemType) {
-  switch (type) {
+function getItemIcon(type: MenuItemType, expanded?: boolean) {
+  // Create a unique key for switch comparison
+  const key = `${type}${expanded ? ':expanded' : ''}`;
+
+  switch (key) {
+    // Categories
+    case `${MenuItemType.CATEGORY}:expanded`:
+      return <FolderOpen className="size-4" />;
     case MenuItemType.CATEGORY:
       return <Folder className="size-4" />;
+
+    // Categories
+    case `${MenuItemType.COMPOSITE}:expanded`:
+      return <PackageOpen className="size-4" />;
+    case MenuItemType.COMPOSITE:
+      return <Package className="size-4" />;
+
+    // Items
+    case `${MenuItemType.ITEM}:expanded`:
+      return <Utensils className="size-4" />;
     case MenuItemType.ITEM:
       return <Utensils className="size-4" />;
+
+    // Options
+    case `${MenuItemType.OPTION}:expanded`:
+      return <Settings className="size-4" />;
     case MenuItemType.OPTION:
       return <Settings className="size-4 text-muted-foreground" />;
+
+    // Modifiers
+    case `${MenuItemType.MODIFIER}:expanded`:
+      return <Settings className="size-4 rotate-45" />;
     case MenuItemType.MODIFIER:
       return <Settings className="size-4 rotate-45 text-muted-foreground" />;
+
     default:
-      return <Settings className="size-4" />;
+      return <Folder className="size-4" />;
   }
 }
 
@@ -87,6 +119,7 @@ function getItemStyle(depth: number, type: MenuItemType) {
 
   switch (type) {
     case MenuItemType.CATEGORY:
+    case MenuItemType.COMPOSITE:
       return {
         ...baseStyle,
         fontSize: depth === 0 ? '18px' : '16px',
@@ -107,6 +140,7 @@ function getItemCount(item: TreeItem<EnhancedMenuItem>): {
 
   switch (item.data.type) {
     case MenuItemType.CATEGORY:
+    case MenuItemType.COMPOSITE:
       return { count: item.children.length, type: 'categories' };
     case MenuItemType.ITEM:
       return { count: item.children.length, type: 'options' };
@@ -115,36 +149,16 @@ function getItemCount(item: TreeItem<EnhancedMenuItem>): {
   }
 }
 
-function hasModifiers(item: TreeItem<EnhancedMenuItem>): boolean {
-  if (!item.children?.length) return false;
-  return item.children.some((childId) => {
-    const child = item.context?.getItem(childId);
-    return (
-      child?.data.type === MenuItemType.MODIFIER ||
-      child?.data.type === MenuItemType.OPTION
-    );
-  });
-}
-
 function RenderCompositeIcon({
   type,
-  hasModifiers,
+  isExpanded,
 }: {
   type: MenuItemType;
-  hasModifiers: boolean;
+  isExpanded: boolean;
 }) {
-  if (type === MenuItemType.CATEGORY && hasModifiers) {
-    return (
-      <div className="relative flex size-4 items-center justify-center">
-        <Folder className="size-4" />
-        <Utensils className="absolute bottom-0 right-0 size-2.5 text-muted-foreground" />
-      </div>
-    );
-  }
-
   return (
     <div className="flex size-4 items-center justify-center">
-      {getItemIcon(type)}
+      {getItemIcon(type, isExpanded)}
     </div>
   );
 }
@@ -156,13 +170,12 @@ function RenderItemIcon({
   item: TreeItem<EnhancedMenuItem>;
   context: MenuTreeRendererProps['context'];
 }) {
+  const { isExpanded } = context;
   const { count, type } = getItemCount(item);
-  const showComposite =
-    item.data.type === MenuItemType.CATEGORY && hasModifiers(item);
 
   return (
     <div className="flex items-center gap-1">
-      <RenderCompositeIcon type={item.data.type} hasModifiers={showComposite} />
+      <RenderCompositeIcon type={item.data.type} isExpanded={isExpanded} />
       {count > 0 && (
         <span
           className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-muted px-1 text-[10px] tabular-nums text-muted-foreground"
@@ -175,10 +188,76 @@ function RenderItemIcon({
   );
 }
 
+function getItemPrice(
+  item: TreeItem<EnhancedMenuItem>,
+  context: MenuTreeRendererProps['context'],
+): { basePrice: number; modifiersTotal: number } {
+  const basePrice = Number(item.data.price || 0);
+  let modifiersTotal = 0;
+
+  if (item.children?.length && item.data.type === MenuItemType.ITEM) {
+    item.children.forEach((childId) => {
+      const modifier = context.getItem(childId);
+      if (modifier?.data.price) {
+        modifiersTotal += Number(modifier.data.price);
+      }
+    });
+  }
+
+  return { basePrice, modifiersTotal };
+}
+
+function RenderPrice({
+  basePrice,
+  modifiersTotal,
+  type,
+}: {
+  basePrice: number;
+  modifiersTotal: number;
+  type: MenuItemType;
+}) {
+  if (basePrice === 0 && modifiersTotal === 0) return null;
+
+  const totalPrice = basePrice + modifiersTotal;
+  const prefix = type === MenuItemType.OPTION ? '+' : '';
+  const priceText = `${prefix}$${totalPrice.toFixed(2)}`;
+  const tooltip =
+    modifiersTotal > 0
+      ? `Base: $${basePrice.toFixed(2)} + Modifiers: $${modifiersTotal.toFixed(2)}`
+      : undefined;
+
+  return (
+    <div className="ml-auto">
+      <span
+        className="shrink-0 text-sm tabular-nums text-muted-foreground"
+        title={tooltip}
+      >
+        {priceText}
+      </span>
+    </div>
+  );
+}
+
+function RenderActions({ isSelected }: { isSelected: boolean }) {
+  const className = `p-6 hidden group-hover:flex  ${isSelected ? 'flex' : ''}`;
+  return (
+    <Button
+      variant="link"
+      className={className}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log({ done: true });
+      }}
+    >
+      <Ellipsis size="6" />
+    </Button>
+  );
+}
+
 function RenderItem({
   item,
   depth,
-  isExpanded,
   context,
 }: {
   item: TreeItem<EnhancedMenuItem>;
@@ -187,33 +266,21 @@ function RenderItem({
   context: MenuTreeRendererProps['context'];
 }) {
   const itemStyle = getItemStyle(depth, item.data.type);
+  const { basePrice, modifiersTotal } = getItemPrice(item, context);
 
   return (
-    <div className="flex w-full items-center gap-2">
+    <div className="flex w-full items-center justify-between gap-2">
       <div className="flex items-center gap-2">
         <RenderItemIcon item={item} context={context} />
         <span className="truncate" style={itemStyle}>
           {item.data.name}
         </span>
       </div>
-      {item.data.type === MenuItemType.ITEM &&
-        item.data.price &&
-        Number(item.data.price) > 0 && (
-          <div className="ml-auto">
-            <span className="shrink-0 text-sm tabular-nums text-muted-foreground">
-              ${Number(item.data.price).toFixed(2)}
-            </span>
-          </div>
-        )}
-      {item.data.type === MenuItemType.OPTION &&
-        item.data.price &&
-        Number(item.data.price) > 0 && (
-          <div className="ml-auto">
-            <span className="shrink-0 text-sm tabular-nums text-muted-foreground">
-              +${Number(item.data.price).toFixed(2)}
-            </span>
-          </div>
-        )}
+      <RenderPrice
+        basePrice={basePrice}
+        modifiersTotal={modifiersTotal}
+        type={item.data.type}
+      />
     </div>
   );
 }
@@ -242,27 +309,6 @@ export function MenuTreeRenderer({
 }: MenuTreeRendererProps) {
   const bgColor = getBackgroundColor(depth);
 
-  // Validate menu structure
-  const validateMenuStructure = () => {
-    const hasChildrenOfDifferentTypes =
-      children &&
-      Array.isArray(children) &&
-      children.some(
-        (child: any) =>
-          child.props.item.data.type !== children[0].props.item.data.type,
-      );
-
-    if (hasChildrenOfDifferentTypes) {
-      console.warn('Invalid menu structure: Mixed types at the same level');
-    }
-
-    if (item.data.type === MenuItemType.OPTION && children) {
-      console.error('Options cannot have children');
-    }
-  };
-
-  validateMenuStructure();
-
   return (
     <>
       <SidebarMenuItem className="border-b border-gray-100">
@@ -272,7 +318,7 @@ export function MenuTreeRenderer({
           isActive={context.isSelected}
           className={cn(
             'group relative cursor-pointer py-3',
-            'transition-all duration-200 hover:scale-[1.02] hover:bg-black/[0.05]',
+            'transition-all duration-200 hover:scale-x-[1.01] hover:bg-black/[0.05]',
             bgColor,
             context.isDraggingOver && 'bg-sidebar-accent/50',
           )}
@@ -291,7 +337,10 @@ export function MenuTreeRenderer({
           />
         </SidebarMenuButton>
       </SidebarMenuItem>
-      {item.data.type === MenuItemType.CATEGORY && children && <>{children}</>}
+      {[MenuItemType.CATEGORY, MenuItemType.COMPOSITE].includes(
+        item.data.type,
+      ) &&
+        children && <>{children}</>}
     </>
   );
 }

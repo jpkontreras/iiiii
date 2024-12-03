@@ -21,9 +21,7 @@ final class MenuController extends Controller
     return Inertia::render('Menu/Index', [
       'restaurant' => $restaurant,
       'menus' => $restaurant->menus()
-        ->with(['menuItems' => function ($query) {
-          $query->with(['category', 'tags']);
-        }])
+        ->with(['entries'])
         ->get(),
     ]);
   }
@@ -53,9 +51,7 @@ final class MenuController extends Controller
 
   public function show(Restaurant $restaurant, Menu $menu): Response
   {
-    $menu->load(['menuItems' => function ($query) {
-      $query->with(['category', 'tags']);
-    }]);
+    $menu->load(['entries']);
 
     return Inertia::render('Menu/Show', [
       'restaurant' => $restaurant,

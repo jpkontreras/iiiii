@@ -6,7 +6,6 @@ import {
 } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 import { MenuItem } from '@/types';
-import { FolderOpen, Settings2, UtensilsCrossed } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import {
   StaticTreeDataProvider,
@@ -20,28 +19,6 @@ import { MenuTreeRenderer } from './MenuTreeRenderer';
 interface MenuTreeProps {
   items: MenuItem[];
   onItemsChange?: (items: MenuItem[]) => void;
-}
-
-function getItemIcon(item: MenuItem | TreeItem<MenuItem>) {
-  // Handle TreeItem<MenuItem>
-  if ('data' in item) {
-    item = item.data;
-  }
-
-  // Now item is definitely a MenuItem
-  if (item.type === 'modifier') {
-    return <Settings2 className="size-4 text-muted-foreground" />;
-  }
-
-  if (item.price && Number(item.price) > 0) {
-    return <UtensilsCrossed className="size-4 text-muted-foreground" />;
-  }
-
-  if (item.type === 'category' || (item.items && item.items.length > 0)) {
-    return <FolderOpen className="size-4 text-muted-foreground" />;
-  }
-
-  return <UtensilsCrossed className="size-4 text-muted-foreground" />;
 }
 
 function buildTreeItems(
@@ -74,7 +51,7 @@ function buildTreeItems(
     treeItems[item.path] = {
       index: item.path,
       canMove: true,
-      isFolder: item.type === 'category',
+      isFolder: ['category', 'composite'].includes(item.type),
       children: [], // Will be populated with child paths
       data: item,
     };
@@ -139,6 +116,7 @@ function getAllPaths(items: MenuItem[]): string[] {
 
 export function MenuTree({ items, onItemsChange }: MenuTreeProps) {
   const treeItems = useMemo(() => buildTreeItems(items), [items]);
+  console.log({ items });
 
   // Initialize with all paths expanded
   const [expandedItems, setExpandedItems] = useState<TreeItemIndex[]>(() =>
@@ -166,12 +144,7 @@ export function MenuTree({ items, onItemsChange }: MenuTreeProps) {
                 expandedItems,
               },
             }}
-            renderItem={(props) => (
-              <MenuTreeRenderer
-                {...props}
-                icon={getItemIcon(props.item.data)}
-              />
-            )}
+            renderItem={(props) => <MenuTreeRenderer {...props} />}
             renderItemsContainer={({ children, containerProps }) => (
               <ul {...containerProps} className={cn('flex flex-col gap-[2px]')}>
                 {children}

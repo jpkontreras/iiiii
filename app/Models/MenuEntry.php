@@ -80,9 +80,10 @@ final class MenuEntry extends Model
       ->orWhere('path', 'like', $this->path . '/+%')
       ->exists();
 
-    // Determine type based on path and descendants
+    // Determine type based on path, descendants, and price
     $type = match (true) {
       $isModifier => 'modifier',
+      $hasChildren && $this->price > 0 => 'composite',
       $hasChildren => 'category',
       default => 'item'
     };
