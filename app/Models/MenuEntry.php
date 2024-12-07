@@ -101,27 +101,17 @@ final class MenuEntry extends Model
       'tags' => $this->formatTags()
     ];
 
-    // Only add children arrays if it actually has descendants
+    // Only add items array if it has descendants
     if ($hasChildren && !$isModifier) {
-      $baseData['items'] = static::where('path', 'like', $this->path . '.%')
-        ->where('path', 'not like', $this->path . '.%.%') // Only immediate children
-        ->where('path', 'not like', '%/%') // Exclude modifiers
-        ->orderBy('position')
-        ->get()
-        ->map(function ($item) {
-          $itemData = $item->formatForDisplay();
-          $itemData['modifiers'] = static::where('path', 'like', $item->path . '/+%')
-            ->orderBy('position')
-            ->get()
-            ->map->formatForDisplay()
-            ->toArray();
-          return $itemData;
-        })
-        ->toArray();
-    } else if (!$isModifier) {
-      $baseData['modifiers'] = static::where('path', 'like', $this->path . '/+%')
-        ->orderBy('position')
-        ->get()
+      $childrenQuery = static::where(function ($query) {
+        $query->where('path', 'like', $this->path . '.%')
+          ->where('path', 'not like', $this->path . '.%.%') // Only immediate children
+          ->where('path', 'not like', '%/%') // Exclude modifiers
+          ->orWhere('path', 'like', $this->path . '/+%'); // Include direct modifiers
+      })
+        ->orderBy('position');
+
+      $baseData['items'] = $childrenQuery->get()
         ->map->formatForDisplay()
         ->toArray();
     }

@@ -19,6 +19,40 @@ export interface Restaurant {
   updated_at: string;
 }
 
+export type EntryType = 'category' | 'item' | 'composite' | 'modifier';
+
+export interface MenuModifier {
+  id: number;
+  path: string;
+  name: string;
+  description?: string;
+  price: string | null;
+  position: number;
+  is_active: boolean;
+  depth: number;
+  type: 'modifier';
+  tags: string[];
+}
+
+export interface MenuEntry {
+  id: number;
+  path: string;
+  name: string;
+  description?: string;
+  price: string | null;
+  position: number;
+  is_active: boolean;
+  depth: number;
+  type: EntryType;
+  tags: string[];
+  items?: MenuEntry[];
+  modifiers?: MenuModifier[];
+}
+
+export interface MenuEntryCollection {
+  entries: MenuEntry[];
+}
+
 export interface Menu {
   id: number;
   restaurant_id: number;
@@ -26,7 +60,7 @@ export interface Menu {
   description?: string;
   template_type: 'predefined' | 'custom';
   is_active: boolean;
-  menuItems?: MenuItem[];
+  entries?: MenuEntryCollection;
   created_at: string;
   updated_at: string;
 }
