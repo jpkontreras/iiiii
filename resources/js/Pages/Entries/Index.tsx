@@ -1,6 +1,6 @@
+import MenuPreview from '@/components/Entries/Preview';
+import MenuTree from '@/components/Entries/Tree';
 import { Header } from '@/Components/Header';
-import { MenuTree } from '@/components/MenuTree/MenuTree';
-import { MenuTreePreview } from '@/components/MenuTree/Preview';
 import {
   ResizableHandle,
   ResizablePanel,
@@ -32,6 +32,8 @@ interface Props extends PageProps {
 }
 
 export default function Index({ restaurant, menu, entries }: Props) {
+  console.log({ entries });
+
   const [items, setItems] = useState<MenuItem[]>(entries);
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
 
@@ -71,18 +73,20 @@ export default function Index({ restaurant, menu, entries }: Props) {
         <ResizablePanelGroup direction="horizontal">
           <ResizablePanel defaultSize={50} minSize={30}>
             <MenuTree items={items} onItemsChange={handleItemsChange} />
+            {/* <MenuTree items={items} onItemsChange={handleItemsChange} /> */}
           </ResizablePanel>
 
           <ResizableHandle />
 
           <ResizablePanel defaultSize={50}>
-            <MenuTreePreview
+            <MenuPreview />
+            {/* <MenuTreePreview
               menuName={menu.name}
               restaurantName={restaurant.name}
               items={items}
               selectedItems={selectedItems}
               onItemClick={handleItemClick}
-            />
+            /> */}
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>

@@ -21,6 +21,11 @@ interface MenuTreeProps {
   onItemsChange?: (items: MenuItem[]) => void;
 }
 
+interface ModifierGroup {
+  name: string;
+  items: MenuItem[];
+}
+
 function buildTreeItems(
   items: MenuItem[],
 ): Record<TreeItemIndex, TreeItem<MenuItem>> {
@@ -45,15 +50,27 @@ function buildTreeItems(
     },
   };
 
-  // Recursive function to process items and their children
   function processItem(item: MenuItem) {
-    // Add the current item to treeItems
+    // For modifiers, enhance the name with the group name
+    let displayName = item.name;
+    if (item.type === 'modifier') {
+      const groupMatch = item.path.match(/\/\+([^.]+)\./);
+      if (groupMatch) {
+        const groupName =
+          groupMatch[1].charAt(0).toUpperCase() + groupMatch[1].slice(1);
+        displayName = `${groupName}: ${item.name}`;
+      }
+    }
+
     treeItems[item.path] = {
       index: item.path,
       canMove: true,
       isFolder: ['category', 'composite'].includes(item.type),
-      children: [], // Will be populated with child paths
-      data: item,
+      children: [],
+      data: {
+        ...item,
+        name: displayName,
+      },
     };
 
     // Process regular items
@@ -66,28 +83,24 @@ function buildTreeItems(
 
     // Process modifiers
     if (item.modifiers && item.modifiers.length > 0) {
-      item.modifiers.forEach((modifier) => {
+      // Sort modifiers by group and position
+      const sortedModifiers = [...item.modifiers].sort((a, b) => {
+        const groupA = a.path.match(/\/\+([^.]+)\./)![1];
+        const groupB = b.path.match(/\/\+([^.]+)\./)![1];
+        if (groupA !== groupB) return groupA.localeCompare(groupB);
+        return (a.position || 0) - (b.position || 0);
+      });
+
+      sortedModifiers.forEach((modifier) => {
         processItem(modifier);
         treeItems[item.path].children!.push(modifier.path);
       });
     }
   }
 
-  // Process top-level items and build the tree
   items.forEach((item) => {
     processItem(item);
     treeItems.root.children!.push(item.path);
-  });
-
-  // Sort children arrays by position
-  Object.values(treeItems).forEach((treeItem) => {
-    if (treeItem.children && treeItem.children.length > 0) {
-      treeItem.children.sort((a, b) => {
-        const itemA = treeItems[a].data as MenuItem;
-        const itemB = treeItems[b].data as MenuItem;
-        return (itemA.position || 0) - (itemB.position || 0);
-      });
-    }
   });
 
   return treeItems;
@@ -132,6 +145,28 @@ export function MenuTree({ items, onItemsChange }: MenuTreeProps) {
     [treeItems],
   );
 
+  const handleSelectItems = (items: TreeItemIndex[]) => {
+    setSelectedItems(items);
+
+    // If we're deselecting (saving) a modifier item
+    const previousSelected = selectedItems[0];
+    if (previousSelected && items.length === 0) {
+      const item = treeItems[previousSelected]?.data;
+      if (item?.type === 'modifier') {
+        // Collapse the parent item
+        const parentPath = item.path.split('/')[0];
+        setExpandedItems((prev) =>
+          prev.filter((path) => !(path as string).startsWith(parentPath)),
+        );
+
+        // Refresh the tree data starting from root
+        console.log({ items });
+
+        dataProvider.onChangeItemChildren('root', items);
+      }
+    }
+  };
+
   return (
     <SidebarContent>
       <SidebarGroup>
@@ -145,6 +180,7 @@ export function MenuTree({ items, onItemsChange }: MenuTreeProps) {
                 selectedItems,
               },
             }}
+            canSearch={false}
             renderItem={(props) => (
               <MenuTreeRenderer {...props} selectedItem={selectedItems[0]} />
             )}
@@ -166,9 +202,7 @@ export function MenuTree({ items, onItemsChange }: MenuTreeProps) {
                 prev.filter((id) => id !== item.index),
               );
             }}
-            onSelectItems={(items) => {
-              setSelectedItems(items);
-            }}
+            onSelectItems={handleSelectItems}
           >
             <Tree
               treeId="menu-tree"

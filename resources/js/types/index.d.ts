@@ -19,32 +19,6 @@ export interface Restaurant {
   updated_at: string;
 }
 
-export interface Category {
-  id: number;
-  name: string;
-  description?: string;
-}
-
-export interface Tag {
-  id: number;
-  name: string;
-}
-
-export interface MenuItem {
-  id: number;
-  menu_id: number;
-  name: string;
-  description?: string;
-  price: number;
-  category_id?: number;
-  category?: Category;
-  photo_path?: string;
-  is_available: boolean;
-  tags?: Tag[];
-  created_at: string;
-  updated_at: string;
-}
-
 export interface Menu {
   id: number;
   restaurant_id: number;
