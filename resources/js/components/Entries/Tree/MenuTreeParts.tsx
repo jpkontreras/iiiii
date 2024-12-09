@@ -35,17 +35,18 @@ export function RenderItemTitle({
   item: TreeItem<MenuEntry>;
   context: TreeItemRenderContext;
 }) {
+  const types: MenuEntry['type'][] = ['item', 'modifier', 'composite'];
+
   return (
     <div className="flex w-full items-center justify-between gap-2">
       <div className="flex items-center gap-2">
         <span className="text-sm">{item.data?.name}</span>
-        {(item.data.type === 'item' || item.data.type === 'modifier') &&
-          item.data.price && (
-            <span className="text-xs font-light italic text-muted-foreground">
-              {item.data.type === 'modifier' && '+'}$
-              {Number(item.data.price).toFixed(2)}
-            </span>
-          )}
+        {types.includes(item.data.type) && item.data.price && (
+          <span className="text-xs font-light italic text-muted-foreground">
+            {item.data.type === 'modifier' && '+'}$
+            {Number(item.data.price).toFixed(2)}
+          </span>
+        )}
       </div>
       <Badge
         variant="secondary"
@@ -87,49 +88,38 @@ export const RenderItem = ({
   const isItem = item.data.type === 'item';
   const { isSelected, isExpanded, isFocused } = context;
 
+  const InteractiveComponent = context.isRenaming ? 'div' : 'button';
+
   const toggleOptions = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     console.log('toggleOptions');
   };
-  console.log({ context });
 
   return (
     <li
       {...context.itemContainerWithChildrenProps}
       className={cn(
-        'list-none',
-        depth > 0 && 'ml-4 border-l border-border/50',
-        isModifier && 'ml-4 border-l border-border/50',
-        isItem && 'ml-4 border-l border-border/50',
-        isFocused && 'bg-red-300',
+        'list-none outline-none',
+        depth > 0 && 'ml-4',
+        isModifier && 'ml-4',
+        isItem && 'ml-4',
       )}
     >
-      <div
+      <InteractiveComponent
         {...context.itemContainerWithoutChildrenProps}
         {...context.interactiveElementProps}
         className={cn(
-          'flex w-full items-center gap-2 px-4 py-1',
-          'hover:bg-accent/50 focus-visible:outline-none',
+          'flex w-full items-center gap-2 px-4 py-1 outline-none',
+          'hover:bg-accent/50',
           isModifier && 'pointer-events-none opacity-90',
+          isSelected && 'bg-accent',
+          isFocused && 'bg-accent/50',
         )}
+        type="button"
       >
-        {/* {isSelected && isExpanded && (
-          <div className="flex h-6 w-full items-center justify-center py-1">
-            <Button
-              variant="outline"
-              size="icon"
-              className="flex h-4 flex-row items-center justify-center"
-              type="button"
-              onClick={toggleOptions}
-            >
-              <Ellipsis />
-            </Button>
-          </div>
-        )} */}
-
         {arrow}
         {title}
-      </div>
+      </InteractiveComponent>
 
       {children && !isModifier && (
         <ul className="flex w-full flex-col">{children}</ul>
