@@ -30,20 +30,18 @@ export class MenuTreeDataProvider implements TreeDataProvider<MenuEntry> {
       const index = entry.path;
       this.pathMap[entry.path] = index;
 
-      // Get parent path
-      const parentPath = entry.path.includes('/')
-        ? entry.path.split('/')[0]
-        : entry.path.split('.').slice(0, -1).join('.');
+      // Determine parent path based on entry type and path structure
+      const parentPath = this.getParentPath(entry);
 
       this.items[index] = {
         index,
-        isFolder: entry.type === 'category' || entry.type === 'composite',
+        isFolder: this.isFolder(entry),
         children: entry.items?.map((item) => item.path) || [],
         data: entry,
         path: entry.path,
       };
 
-      // Add this item to parent's children if it's not a top-level item
+      // Add to parent's children if not root
       if (parentPath && parentPath !== entry.path) {
         const parent = this.items[parentPath];
         if (parent && !parent.children.includes(index)) {
@@ -51,11 +49,36 @@ export class MenuTreeDataProvider implements TreeDataProvider<MenuEntry> {
         }
       }
 
-      // Process child items if they exist
+      // Recursively process children
       if (entry.items && entry.items.length > 0) {
         this.processEntries(entry.items);
       }
     });
+  }
+
+  private getParentPath(entry: MenuEntry): string {
+    // Handle root level entries
+    if (!entry.path.includes('.') && !entry.path.includes('/')) {
+      return '';
+    }
+
+    // Handle modifiers
+    if (entry.type === 'modifier') {
+      const [basePath] = entry.path.split('/+');
+      return basePath;
+    }
+
+    // Handle regular items and categories
+    const pathParts = entry.path.split('.');
+    return pathParts.slice(0, -1).join('.');
+  }
+
+  private isFolder(entry: MenuEntry): boolean {
+    return Boolean(
+      entry.type === 'category' ||
+        entry.type === 'composite' ||
+        (entry.items && entry.items.length > 0),
+    );
   }
 
   // Required TreeDataProvider methods
