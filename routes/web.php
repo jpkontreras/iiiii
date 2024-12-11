@@ -38,7 +38,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Restaurant Routes
     Route::resource('restaurants', RestaurantController::class)->names("restaurants");
     Route::resource('restaurants.menus', MenuController::class)->names("restaurants.menus");
-    Route::resource('restaurants.menus.entries', MenuEntryController::class)->names("restaurants.menus.entries");
+    // Route::resource('restaurants.menus.entries', MenuEntryController::class)->names("restaurants.menus.entries");
     // Restaurant Menu Routes
     // Route::get('/restaurant/{restaurant}/menu', [RestaurantController::class, 'showMenu'])->name('restaurant.menu.edit');
     // Route::get('/restaurant/{restaurant}/menu/create', [RestaurantController::class, 'createMenu'])->name('restaurant.menu.create');
