@@ -19,38 +19,70 @@ export interface Restaurant {
   updated_at: string;
 }
 
-export type EntryType = 'category' | 'item' | 'composite' | 'modifier';
-
-export interface MenuModifier {
+export interface MenuItem {
   id: number;
-  path: string;
   name: string;
+  slug: string;
   description?: string;
-  price: string | null;
-  position: number;
+  base_price: number;
+  image_path?: string;
+  category_id?: number;
   is_active: boolean;
-  depth: number;
-  type: 'modifier';
-  tags: string[];
+  variations?: ItemVariation[];
+  modifier_groups?: ModifierGroupWithModifiers[];
 }
 
-export interface MenuEntry {
+export interface ItemVariation {
   id: number;
-  path: string;
   name: string;
-  description?: string;
-  price: string | null;
-  position: number;
+  price_adjustment: number;
+  is_default: boolean;
   is_active: boolean;
-  depth: number;
-  type: EntryType;
-  tags: string[];
-  items?: MenuEntry[];
-  modifiers?: MenuModifier[];
 }
 
-export interface MenuEntryCollection {
-  entries: MenuEntry[];
+export interface ModifierGroupWithModifiers {
+  id: number;
+  name: string;
+  min_selections: number;
+  max_selections: number;
+  is_required: boolean;
+  modifiers: Modifier[];
+  pivot?: {
+    menu_item_id: number;
+    modifier_group_id: number;
+  };
+}
+
+export interface ModifierGroup {
+  id: number;
+  name: string;
+  min_selections: number;
+  max_selections: number;
+  is_required: boolean;
+}
+
+export interface Modifier {
+  id: number;
+  name: string;
+  price_adjustment: number;
+  is_default: boolean;
+  is_active: boolean;
+  modifier_group_id: number;
+}
+
+export interface MenuTreeNode {
+  id: number;
+  name: string;
+  type: 'category' | 'item';
+  children: MenuTreeNode[];
+  data?: {
+    slug: string;
+    description?: string;
+    base_price: number;
+    image_path?: string;
+    variations: ItemVariation[];
+    modifier_groups: ModifierGroupWithModifiers[];
+  };
 }
 
 export interface Menu {
@@ -58,9 +90,7 @@ export interface Menu {
   restaurant_id: number;
   name: string;
   description?: string;
-  template_type: 'predefined' | 'custom';
   is_active: boolean;
-  entries?: MenuEntryCollection;
   created_at: string;
   updated_at: string;
 }

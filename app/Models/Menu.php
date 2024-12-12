@@ -4,21 +4,18 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class Menu extends Model
 {
-  use HasFactory;
-
   protected $fillable = [
     'name',
     'description',
     'restaurant_id',
+    'template_type',
     'is_active',
-    'template_type', // predefined or custom
   ];
 
   protected $casts = [
@@ -30,8 +27,18 @@ final class Menu extends Model
     return $this->belongsTo(Restaurant::class);
   }
 
-  public function entries(): HasMany
+  public function categories(): HasMany
   {
-    return $this->hasMany(MenuEntry::class);
+    return $this->hasMany(Category::class);
+  }
+
+  public function menuItems(): HasMany
+  {
+    return $this->hasMany(MenuItem::class);
+  }
+
+  public function modifierGroups(): HasMany
+  {
+    return $this->hasMany(ModifierGroup::class);
   }
 }

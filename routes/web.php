@@ -5,6 +5,7 @@ use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RestaurantController;
+use App\Http\Controllers\MenuItemController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -37,10 +38,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Restaurant Routes
     Route::resource('restaurants', RestaurantController::class)->names("restaurants");
     Route::resource('restaurants.menus', MenuController::class)->names("restaurants.menus");
-    // Route::resource('restaurants.menus.entries', MenuEntryController::class)->names("restaurants.menus.entries");
-    // Restaurant Menu Routes
-    // Route::get('/restaurant/{restaurant}/menu', [RestaurantController::class, 'showMenu'])->name('restaurant.menu.edit');
-    // Route::get('/restaurant/{restaurant}/menu/create', [RestaurantController::class, 'createMenu'])->name('restaurant.menu.create');
+    Route::get('restaurants/{restaurant}/menus/{menu}/items', [MenuItemController::class, 'index'])
+        ->name('restaurants.menus.items.index');
 
     // Restaurant Additional Features
     Route::get('/restaurants/{restaurant}/dashboard', [DashboardController::class, 'showRestaurantDashboard'])

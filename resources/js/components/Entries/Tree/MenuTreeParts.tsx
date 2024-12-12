@@ -110,7 +110,7 @@ export const RenderItem = ({
         {...context.interactiveElementProps}
         className={cn(
           'flex w-full items-center gap-2 px-4 py-1 outline-none',
-          'hover:bg-accent/50',
+          'hover:bg-accent/90',
           isModifier && 'pointer-events-none opacity-90',
           isSelected && 'bg-accent',
           isFocused && 'bg-accent/50',

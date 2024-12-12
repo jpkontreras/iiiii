@@ -4,24 +4,25 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class OrderItem extends Model
 {
-  use HasFactory;
-
   protected $fillable = [
     'order_id',
-    'menu_entry_id',
+    'menu_item_id',
+    'item_variation_id',
     'quantity',
-    'special_instructions',
+    'unit_price',
     'total_price',
+    'special_instructions',
   ];
 
   protected $casts = [
     'quantity' => 'integer',
+    'unit_price' => 'decimal:2',
     'total_price' => 'decimal:2',
   ];
 
@@ -30,8 +31,18 @@ final class OrderItem extends Model
     return $this->belongsTo(Order::class);
   }
 
-  public function menuEntry(): BelongsTo
+  public function menuItem(): BelongsTo
   {
-    return $this->belongsTo(MenuEntry::class);
+    return $this->belongsTo(MenuItem::class);
+  }
+
+  public function itemVariation(): BelongsTo
+  {
+    return $this->belongsTo(ItemVariation::class);
+  }
+
+  public function modifiers(): HasMany
+  {
+    return $this->hasMany(OrderItemModifier::class);
   }
 }

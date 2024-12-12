@@ -42,7 +42,7 @@ final class MenuController extends Controller
     ]);
 
     return redirect()
-      ->route('restaurants.menus.entries.index', [
+      ->route('restaurants.menus.items.index', [
         'restaurant' => $restaurant->id,
         'menu' => $menu->id,
       ])

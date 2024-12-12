@@ -34,7 +34,7 @@ interface Props extends PageProps {
 export default function Index({ restaurant, menu, entries }: Props) {
   console.log({ entries });
 
-  const [items, setItems] = useState<MenuItem[]>(entries);
+  const [items, setItems] = useState<MenuItem[]>(entries || []);
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
 
   const handleItemsChange = (newItems: MenuItem[]) => {

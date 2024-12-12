@@ -1,84 +1,54 @@
-import { MenuEntry } from '@/types';
+import { MenuTreeNode } from '@/types';
 import { TreeDataProvider, TreeItem, TreeItemIndex } from 'react-complex-tree';
 
 export interface TreeMenuItem extends TreeItem {
-  data: MenuEntry;
-  path: string;
+  data: MenuTreeNode;
+  index: TreeItemIndex;
   children: TreeItemIndex[];
 }
 
-export class MenuTreeDataProvider implements TreeDataProvider<MenuEntry> {
+export class MenuTreeDataProvider implements TreeDataProvider<MenuTreeNode> {
   private items: Record<TreeItemIndex, TreeMenuItem> = {};
-  private pathMap: Record<string, TreeItemIndex> = {};
 
-  constructor(menuEntries: MenuEntry[]) {
+  constructor(treeData: MenuTreeNode[]) {
     // Initialize root item
     this.items.root = {
       index: 'root',
       isFolder: true,
-      children: menuEntries.map((entry) => entry.path),
-      data: {} as MenuEntry,
-      path: '',
+      children: [],
+      data: {
+        id: 0,
+        name: 'Root',
+        type: 'category',
+        children: treeData,
+      },
     };
 
-    // Process all entries recursively
-    this.processEntries(menuEntries);
+    // Process all nodes recursively
+    this.processNodes(treeData, 'root');
   }
 
-  private processEntries(entries: MenuEntry[]) {
-    entries.forEach((entry) => {
-      const index = entry.path;
-      this.pathMap[entry.path] = index;
+  private processNodes(nodes: MenuTreeNode[], parentId: TreeItemIndex) {
+    nodes.forEach((node, index) => {
+      const nodeId = `${parentId}_${index}`;
 
-      // Determine parent path based on entry type and path structure
-      const parentPath = this.getParentPath(entry);
-
-      this.items[index] = {
-        index,
-        isFolder: this.isFolder(entry),
-        children: entry.items?.map((item) => item.path) || [],
-        data: entry,
-        path: entry.path,
+      this.items[nodeId] = {
+        index: nodeId,
+        isFolder: node.type === 'category',
+        children: [],
+        data: node,
       };
 
-      // Add to parent's children if not root
-      if (parentPath && parentPath !== entry.path) {
-        const parent = this.items[parentPath];
-        if (parent && !parent.children.includes(index)) {
-          parent.children.push(index);
-        }
+      // Add to parent's children
+      if (parentId !== nodeId) {
+        this.items[parentId].children.push(nodeId);
       }
 
-      // Recursively process children
-      if (entry.items && entry.items.length > 0) {
-        this.processEntries(entry.items);
+      // Process children if they exist
+      if (node.children && node.children.length > 0) {
+        this.processNodes(node.children, nodeId);
       }
     });
-  }
-
-  private getParentPath(entry: MenuEntry): string {
-    // Handle root level entries
-    if (!entry.path.includes('.') && !entry.path.includes('/')) {
-      return '';
-    }
-
-    // Handle modifiers
-    if (entry.type === 'modifier') {
-      const [basePath] = entry.path.split('/+');
-      return basePath;
-    }
-
-    // Handle regular items and categories
-    const pathParts = entry.path.split('.');
-    return pathParts.slice(0, -1).join('.');
-  }
-
-  private isFolder(entry: MenuEntry): boolean {
-    return Boolean(
-      entry.type === 'category' ||
-        entry.type === 'composite' ||
-        (entry.items && entry.items.length > 0),
-    );
   }
 
   // Required TreeDataProvider methods
@@ -102,11 +72,11 @@ export class MenuTreeDataProvider implements TreeDataProvider<MenuEntry> {
   }
 
   // Helper methods
-  getItemByPath(path: string): TreeMenuItem | undefined {
-    return this.items[this.pathMap[path]];
-  }
-
   getAllItems(): Record<TreeItemIndex, TreeMenuItem> {
     return this.items;
+  }
+
+  getItemById(id: number): TreeMenuItem | undefined {
+    return Object.values(this.items).find((item) => item.data.id === id);
   }
 }
