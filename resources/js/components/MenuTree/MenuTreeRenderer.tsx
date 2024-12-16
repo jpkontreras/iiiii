@@ -16,19 +16,19 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { TreeItem, TreeRenderProps } from 'react-complex-tree';
-import { Badge } from '../../ui/badge';
-import { Button } from '../../ui/button';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '../../ui/collapsible';
-import { Input } from '../../ui/input';
-import { Label } from '../../ui/label';
-import { ScrollArea } from '../../ui/scroll-area';
-import { SidebarMenuButton, SidebarMenuItem } from '../../ui/sidebar';
-import { Textarea } from '../../ui/textarea';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/tooltip';
+} from '../ui/collapsible';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { ScrollArea } from '../ui/scroll-area';
+import { SidebarMenuButton, SidebarMenuItem } from '../ui/sidebar';
+import { Textarea } from '../ui/textarea';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 
 // Add an enum to strictly type the menu item types
 enum MenuItemType {
