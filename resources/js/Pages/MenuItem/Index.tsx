@@ -1,4 +1,5 @@
-import MenuPreview from '@/components/Entries/Preview';
+import { MenuTreePreview } from '@/components/Entries/Preview/MenuTreePreview';
+
 import MenuTree from '@/components/Entries/Tree';
 import { Header } from '@/Components/Header';
 import {
@@ -32,8 +33,6 @@ interface Props extends PageProps {
 }
 
 export default function Index({ restaurant, menu, entries }: Props) {
-  console.log({ entries });
-
   const [items, setItems] = useState<MenuItem[]>(entries || []);
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
 
@@ -53,10 +52,6 @@ export default function Index({ restaurant, menu, entries }: Props) {
     });
   };
 
-  const handleItemClick = (itemId: number) => {
-    handleSelectItem(itemId);
-  };
-
   return (
     <AuthenticatedLayout
       header={
@@ -71,22 +66,19 @@ export default function Index({ restaurant, menu, entries }: Props) {
     >
       <div className="container">
         <ResizablePanelGroup direction="horizontal">
-          <ResizablePanel defaultSize={50} minSize={30}>
+          <ResizablePanel defaultSize={30} minSize={30}>
             <MenuTree items={items} onItemsChange={handleItemsChange} />
-            {/* <MenuTree items={items} onItemsChange={handleItemsChange} /> */}
           </ResizablePanel>
 
           <ResizableHandle />
 
-          <ResizablePanel defaultSize={50}>
-            <MenuPreview />
-            {/* <MenuTreePreview
-              menuName={menu.name}
-              restaurantName={restaurant.name}
+          <ResizablePanel defaultSize={70}>
+            <MenuTreePreview
               items={items}
+              restaurantName={restaurant.name}
+              menuName={menu.name}
               selectedItems={selectedItems}
-              onItemClick={handleItemClick}
-            /> */}
+            />
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>

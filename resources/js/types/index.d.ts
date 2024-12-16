@@ -25,6 +25,7 @@ export interface MenuItem {
   slug: string;
   description?: string;
   base_price: number;
+  depth: number;
   image_path?: string;
   category_id?: number;
   is_active: boolean;
@@ -75,6 +76,8 @@ export interface MenuTreeNode {
   name: string;
   type: 'category' | 'item';
   children: MenuTreeNode[];
+  depth: number;
+  description?: string;
   data?: {
     slug: string;
     description?: string;

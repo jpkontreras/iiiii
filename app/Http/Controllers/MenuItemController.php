@@ -46,9 +46,9 @@ class MenuItemController extends Controller
     ]);
   }
 
-  private function buildCategoryTree(Collection $categories, Collection $menuItems): array
+  private function buildCategoryTree(Collection $categories, Collection $menuItems, int $depth = 0): array
   {
-    return $categories->map(function ($category) use ($menuItems) {
+    return $categories->map(function ($category) use ($menuItems, $depth) {
       $categoryItems = $menuItems->where('category_id', $category->id)->values();
 
       $node = [
@@ -56,6 +56,7 @@ class MenuItemController extends Controller
         'name' => $category->name,
         'type' => 'category',
         'children' => [],
+        'depth' => $depth,
       ];
 
       // Add menu items for this category
@@ -64,38 +65,33 @@ class MenuItemController extends Controller
           'id' => $item->id,
           'name' => $item->name,
           'type' => 'item',
-          'data' => [
-            'slug' => $item->slug,
-            'description' => $item->description,
-            'base_price' => (float) $item->base_price,
-            'image_path' => $item->image_path,
-            'variations' => $item->variations->map(fn($v) => [
-              'id' => $v->id,
-              'name' => $v->name,
-              'price_adjustment' => (float) $v->price_adjustment,
-              'is_default' => $v->is_default,
-              'is_active' => $v->is_active,
+          'slug' => $item->slug,
+          'description' => $item->description,
+          'price' => (float) $item->base_price,
+          'image_path' => $item->image_path,
+          'depth' => $depth + 1, // Add depth for menu items
+          'variations' => $item->variations->map(fn($v) => [
+            'id' => $v->id,
+            'name' => $v->name,
+            'price' => (float) $v->price_adjustment,
+            'is_default' => $v->is_default,
+            'is_active' => $v->is_active,
+          ]),
+          'modifier_groups' => $item->modifierGroups->map(fn($g) => [
+            'id' => $g->id,
+            'name' => $g->name,
+            'min_selections' => $g->min_selections,
+            'max_selections' => $g->max_selections,
+            'is_required' => $g->is_required,
+            'modifiers' => $g->modifiers->map(fn($m) => [
+              'id' => $m->id,
+              'name' => $m->name,
+              'price' => (float) $m->price_adjustment,
+              'is_default' => $m->is_default,
+              'is_active' => $m->is_active,
+              'modifier_group_id' => $g->id,
             ]),
-            'modifier_groups' => $item->modifierGroups->map(fn($g) => [
-              'id' => $g->id,
-              'name' => $g->name,
-              'min_selections' => $g->min_selections,
-              'max_selections' => $g->max_selections,
-              'is_required' => $g->is_required,
-              'pivot' => [
-                'menu_item_id' => $item->id,
-                'modifier_group_id' => $g->id,
-              ],
-              'modifiers' => $g->modifiers->map(fn($m) => [
-                'id' => $m->id,
-                'name' => $m->name,
-                'price_adjustment' => (float) $m->price_adjustment,
-                'is_default' => $m->is_default,
-                'is_active' => $m->is_active,
-                'modifier_group_id' => $g->id,
-              ]),
-            ]),
-          ],
+          ]),
         ];
       }
 
@@ -103,7 +99,7 @@ class MenuItemController extends Controller
       if ($category->children->isNotEmpty()) {
         $node['children'] = array_merge(
           $node['children'],
-          $this->buildCategoryTree($category->children, $menuItems)
+          $this->buildCategoryTree($category->children, $menuItems, $depth + 1)
         );
       }
 

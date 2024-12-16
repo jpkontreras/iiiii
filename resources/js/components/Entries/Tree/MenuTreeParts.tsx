@@ -1,6 +1,5 @@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { MenuEntry } from '@/types';
 import { ChevronRight } from 'lucide-react';
 import { ReactNode } from 'react';
 import { TreeItem, TreeItemRenderContext } from 'react-complex-tree';
@@ -90,11 +89,6 @@ export const RenderItem = ({
 
   const InteractiveComponent = context.isRenaming ? 'div' : 'button';
 
-  const toggleOptions = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    console.log('toggleOptions');
-  };
-
   return (
     <li
       {...context.itemContainerWithChildrenProps}
@@ -109,7 +103,7 @@ export const RenderItem = ({
         {...context.itemContainerWithoutChildrenProps}
         {...context.interactiveElementProps}
         className={cn(
-          'flex w-full items-center gap-2 px-4 py-1 outline-none',
+          'flex w-full items-center gap-2 border-b border-l px-4 py-1 outline-none',
           'hover:bg-accent/90',
           isModifier && 'pointer-events-none opacity-90',
           isSelected && 'bg-accent',
