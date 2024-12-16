@@ -1,12 +1,12 @@
-import { MenuEntry } from '@/types';
+import { MenuTreeNode } from '@/types';
 import { useMemo, useState } from 'react';
 import { Tree, UncontrolledTreeEnvironment } from 'react-complex-tree';
 import { MenuTreeDataProvider } from './MenuTreeDataProvider';
 import { RenderItem, RenderItemArrow, RenderItemTitle } from './MenuTreeParts';
 
 interface MenuTreeProps {
-  items: MenuEntry[];
-  onItemsChange?: (items: MenuEntry[]) => void;
+  items: MenuTreeNode[];
+  onItemsChange?: (items: MenuTreeNode[]) => void;
 }
 
 type MenuItemType = 'category' | 'item' | 'modifier';
@@ -16,7 +16,7 @@ function MenuTree({ items, onItemsChange }: MenuTreeProps) {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
 
   return (
-    <UncontrolledTreeEnvironment<MenuEntry>
+    <UncontrolledTreeEnvironment<MenuTreeNode>
       dataProvider={dataProvider}
       getItemTitle={(item) => item.data.name}
       viewState={{

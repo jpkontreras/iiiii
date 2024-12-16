@@ -24,7 +24,7 @@ export interface MenuItem {
   name: string;
   slug: string;
   description?: string;
-  base_price: number;
+  price: number;
   depth: number;
   image_path?: string;
   category_id?: number;
@@ -75,17 +75,14 @@ export interface MenuTreeNode {
   id: number;
   name: string;
   type: 'category' | 'item';
-  children: MenuTreeNode[];
-  depth: number;
+  children?: MenuTreeNode[];
+  depth?: number;
   description?: string;
-  data?: {
-    slug: string;
-    description?: string;
-    base_price: number;
-    image_path?: string;
-    variations: ItemVariation[];
-    modifier_groups: ModifierGroupWithModifiers[];
-  };
+  slug?: string;
+  price?: number;
+  image_path?: string;
+  variations?: ItemVariation[];
+  modifier_groups?: ModifierGroupWithModifiers[];
 }
 
 export interface Menu {

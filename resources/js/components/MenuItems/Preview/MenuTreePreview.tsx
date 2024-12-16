@@ -1,11 +1,11 @@
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MenuItem } from '@/types';
+import { MenuTreeNode } from '@/types';
 import { MenuTreeBody } from './MenuTreeBody';
 import { MenuTreeHeader } from './MenuTreeHeader';
 interface MenuTreePreviewProps {
   menuName: string;
   restaurantName: string;
-  items: MenuItem[];
+  items: MenuTreeNode[];
   selectedItems: Set<number>;
 }
 

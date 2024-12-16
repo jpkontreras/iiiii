@@ -34,7 +34,7 @@ const MenuTreeItem = ({
         )}
       </div>
 
-      {item.children?.length > 0 && (
+      {item.children && item.children.length > 0 && (
         <div className={cn('space-y-2', !isRoot && 'ml-4')}>
           {item.children.map((child) => (
             <MenuTreeItem key={child.id} item={child} isSelected={isSelected} />

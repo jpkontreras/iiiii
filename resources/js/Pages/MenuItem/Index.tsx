@@ -8,7 +8,7 @@ import {
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { MenuItem } from '@/types';
+import { MenuTreeNode } from '@/types';
 import { __ } from 'laravel-translator';
 import { useState } from 'react';
 
@@ -29,14 +29,14 @@ interface Menu {
 interface Props extends PageProps {
   restaurant: Restaurant;
   menu: Menu;
-  entries: MenuItem[];
+  entries: MenuTreeNode[];
 }
 
 export default function Index({ restaurant, menu, entries }: Props) {
-  const [items, setItems] = useState<MenuItem[]>(entries || []);
+  const [items, setItems] = useState<MenuTreeNode[]>(entries || []);
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
 
-  const handleItemsChange = (newItems: MenuItem[]) => {
+  const handleItemsChange = (newItems: MenuTreeNode[]) => {
     setItems(newItems);
   };
 

@@ -1,5 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { MenuTreeNode } from '@/types';
 import { ChevronRight } from 'lucide-react';
 import { ReactNode } from 'react';
 import { TreeItem, TreeItemRenderContext } from 'react-complex-tree';
@@ -8,7 +9,7 @@ export function RenderItemArrow({
   item,
   context,
 }: {
-  item: TreeItem<MenuEntry>;
+  item: TreeItem<MenuTreeNode>;
   context: TreeItemRenderContext;
 }) {
   if (!item.children?.length) {
@@ -31,21 +32,16 @@ export function RenderItemTitle({
   item,
   context,
 }: {
-  item: TreeItem<MenuEntry>;
+  item: TreeItem<MenuTreeNode>;
   context: TreeItemRenderContext;
 }) {
-  const types: MenuEntry['type'][] = ['item', 'modifier', 'composite'];
+  const types: MenuTreeNode['type'][] = ['item', 'category'];
 
   return (
     <div className="flex w-full items-center justify-between gap-2">
       <div className="flex items-center gap-2">
         <span className="text-sm">{item.data?.name}</span>
-        {types.includes(item.data.type) && item.data.price && (
-          <span className="text-xs font-light italic text-muted-foreground">
-            {item.data.type === 'modifier' && '+'}$
-            {Number(item.data.price).toFixed(2)}
-          </span>
-        )}
+        {types.includes(item.data.type) && item.data.price}
       </div>
       <Badge
         variant="secondary"
@@ -54,10 +50,6 @@ export function RenderItemTitle({
             item.data.type === 'category',
           'border-green-200 bg-green-50 text-green-700':
             item.data.type === 'item',
-          'border-red-200 bg-red-50 text-red-700':
-            item.data.type === 'composite',
-          'border-orange-200 bg-orange-50 text-orange-700':
-            item.data.type === 'modifier',
         })}
       >
         {item.data.type}
@@ -67,7 +59,7 @@ export function RenderItemTitle({
 }
 
 interface RenderItemProps {
-  item: TreeItem<MenuEntry>;
+  item: TreeItem<MenuTreeNode>;
   title: ReactNode;
   arrow: ReactNode;
   depth: number;
@@ -83,7 +75,6 @@ export const RenderItem = ({
   context,
   children,
 }: RenderItemProps) => {
-  const isModifier = item.data.type === 'modifier';
   const isItem = item.data.type === 'item';
   const { isSelected, isExpanded, isFocused } = context;
 
@@ -95,7 +86,6 @@ export const RenderItem = ({
       className={cn(
         'list-none outline-none',
         depth > 0 && 'ml-4',
-        isModifier && 'ml-4',
         isItem && 'ml-4',
       )}
     >
@@ -103,9 +93,8 @@ export const RenderItem = ({
         {...context.itemContainerWithoutChildrenProps}
         {...context.interactiveElementProps}
         className={cn(
-          'flex w-full items-center gap-2 border-b border-l px-4 py-1 outline-none',
+          'flex w-full items-center gap-2 px-4 py-1 outline-none',
           'hover:bg-accent/90',
-          isModifier && 'pointer-events-none opacity-90',
           isSelected && 'bg-accent',
           isFocused && 'bg-accent/50',
         )}
@@ -115,9 +104,7 @@ export const RenderItem = ({
         {title}
       </InteractiveComponent>
 
-      {children && !isModifier && (
-        <ul className="flex w-full flex-col">{children}</ul>
-      )}
+      {children && <ul className="flex w-full flex-col">{children}</ul>}
     </li>
   );
 };
