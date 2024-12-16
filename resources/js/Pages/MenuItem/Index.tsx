@@ -1,7 +1,7 @@
-import { MenuTreePreview } from '@/components/Entries/Preview/MenuTreePreview';
+import { MenuTreePreview } from '@/components/MenuItems/Preview/MenuTreePreview';
 
-import MenuTree from '@/components/Entries/Tree';
 import { Header } from '@/Components/Header';
+import MenuTree from '@/components/MenuItems/Tree';
 import {
   ResizableHandle,
   ResizablePanel,
