@@ -37,11 +37,17 @@ export function RenderItemTitle({
 }) {
   const types: MenuTreeNode['type'][] = ['item', 'category'];
 
+  console.log({ i: item.data.type });
+
   return (
     <div className="flex w-full items-center justify-between gap-2">
       <div className="flex items-center gap-2">
         <span className="text-sm">{item.data?.name}</span>
-        {types.includes(item.data.type) && item.data.price}
+        {item?.data?.price && (
+          <span className="text-sm text-foreground/60">
+            ${item.data?.price}
+          </span>
+        )}
       </div>
       <Badge
         variant="secondary"

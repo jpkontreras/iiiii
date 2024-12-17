@@ -28,15 +28,27 @@ export class MenuTreeDataProvider implements TreeDataProvider<MenuTreeNode> {
     this.processNodes(treeData, 'root');
   }
 
+  private formatDisplayName(name: string): string {
+    return name
+      .split('_')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+
   private processNodes(nodes: MenuTreeNode[], parentId: TreeItemIndex) {
     nodes.forEach((node, index) => {
       const nodeId = `${parentId}_${index}`;
 
       this.items[nodeId] = {
         index: nodeId,
-        isFolder: node.type === 'category',
+        isFolder:
+          node.type === 'category' || this.hasModifiersOrVariations(node),
         children: [],
-        data: node,
+        data: {
+          ...node,
+          name: this.formatDisplayName(node.name),
+          type: this.formatDisplayName(node.type),
+        },
       };
 
       // Add to parent's children
@@ -48,7 +60,89 @@ export class MenuTreeDataProvider implements TreeDataProvider<MenuTreeNode> {
       if (node.children && node.children.length > 0) {
         this.processNodes(node.children, nodeId);
       }
+
+      if (node.type === 'item') {
+        this.processItemExtras(node, nodeId);
+      }
     });
+  }
+
+  private hasModifiersOrVariations(node: MenuTreeNode): boolean {
+    if (node.type !== 'item') {
+      return false;
+    }
+
+    const hasVariations =
+      Array.isArray(node.variations) && node.variations.length > 0;
+    const hasModifierGroups =
+      Array.isArray(node.modifier_groups) && node.modifier_groups.length > 0;
+
+    return hasVariations || hasModifierGroups;
+  }
+
+  private processItemExtras(node: MenuTreeNode, parentId: TreeItemIndex) {
+    // Process variations directly under the parent item
+    if (node.variations && node.variations.length > 0) {
+      node.variations.forEach((variation, index) => {
+        const variationId = `${parentId}_variation_${index}`;
+        this.items[variationId] = {
+          index: variationId,
+          isFolder: false,
+          children: [],
+          data: {
+            ...variation,
+            type: 'Variation',
+            name:
+              variation.price > 0
+                ? `${variation.name} (+$${variation.price.toFixed(2)})`
+                : variation.name,
+          },
+        };
+        this.items[parentId].children.push(variationId);
+      });
+    }
+
+    // Process modifier groups directly under the parent item
+    if (node.modifier_groups && node.modifier_groups.length > 0) {
+      node.modifier_groups.forEach((group, groupIndex) => {
+        const groupId = `${parentId}_group_${groupIndex}`;
+        const selectionText =
+          group.min_selections === group.max_selections
+            ? `(Select ${group.min_selections})`
+            : `(Select ${group.min_selections}-${group.max_selections})`;
+
+        this.items[groupId] = {
+          index: groupId,
+          isFolder: true,
+          children: [],
+          data: {
+            ...group,
+            type: 'Modifier Group',
+            name: `${group.name} ${selectionText}`,
+          },
+        };
+        this.items[parentId].children.push(groupId);
+
+        // Process modifiers within the group
+        group.modifiers.forEach((modifier, modifierIndex) => {
+          const modifierId = `${groupId}_${modifierIndex}`;
+          this.items[modifierId] = {
+            index: modifierId,
+            isFolder: false,
+            children: [],
+            data: {
+              ...modifier,
+              type: 'Modifier',
+              name:
+                modifier.price > 0
+                  ? `${modifier.name} (+$${modifier.price.toFixed(2)})`
+                  : modifier.name,
+            },
+          };
+          this.items[groupId].children.push(modifierId);
+        });
+      });
+    }
   }
 
   // Required TreeDataProvider methods
@@ -71,7 +165,6 @@ export class MenuTreeDataProvider implements TreeDataProvider<MenuTreeNode> {
     this.items[itemId].children = newChildren;
   }
 
-  // Helper methods
   getAllItems(): Record<TreeItemIndex, TreeMenuItem> {
     return this.items;
   }
