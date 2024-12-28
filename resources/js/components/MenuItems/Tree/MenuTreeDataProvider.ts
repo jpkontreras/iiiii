@@ -28,26 +28,19 @@ export class MenuTreeDataProvider implements TreeDataProvider<MenuTreeNode> {
     this.processNodes(treeData, 'root');
   }
 
-  private formatDisplayName(name: string): string {
-    return name
-      .split('_')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-  }
-
+  //  isFolder: ode.type === 'category' || this.hasModifiersOrVariations(node),
   private processNodes(nodes: MenuTreeNode[], parentId: TreeItemIndex) {
     nodes.forEach((node, index) => {
       const nodeId = `${parentId}_${index}`;
 
       this.items[nodeId] = {
         index: nodeId,
-        isFolder:
-          node.type === 'category' || this.hasModifiersOrVariations(node),
+        isFolder: node.type === 'category',
         children: [],
         data: {
           ...node,
-          name: this.formatDisplayName(node.name),
-          type: this.formatDisplayName(node.type),
+          name: node.name,
+          type: node.type,
         },
       };
 
@@ -61,9 +54,9 @@ export class MenuTreeDataProvider implements TreeDataProvider<MenuTreeNode> {
         this.processNodes(node.children, nodeId);
       }
 
-      if (node.type === 'item') {
-        this.processItemExtras(node, nodeId);
-      }
+      // if (node.type === 'item') {
+      //   this.processItemExtras(node, nodeId);
+      // }
     });
   }
 
@@ -91,7 +84,7 @@ export class MenuTreeDataProvider implements TreeDataProvider<MenuTreeNode> {
           children: [],
           data: {
             ...variation,
-            type: 'Variation',
+            type: 'variation',
             name:
               variation.price > 0
                 ? `${variation.name} (+$${variation.price.toFixed(2)})`
@@ -117,7 +110,7 @@ export class MenuTreeDataProvider implements TreeDataProvider<MenuTreeNode> {
           children: [],
           data: {
             ...group,
-            type: 'Modifier Group',
+            type: 'modifier_group',
             name: `${group.name} ${selectionText}`,
           },
         };
@@ -132,7 +125,7 @@ export class MenuTreeDataProvider implements TreeDataProvider<MenuTreeNode> {
             children: [],
             data: {
               ...modifier,
-              type: 'Modifier',
+              type: 'modifier',
               name:
                 modifier.price > 0
                   ? `${modifier.name} (+$${modifier.price.toFixed(2)})`

@@ -1,4 +1,3 @@
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { MenuTreeNode } from '@/types';
 import { ChevronRight } from 'lucide-react';
@@ -28,17 +27,7 @@ export function RenderItemArrow({
   );
 }
 
-export function RenderItemTitle({
-  item,
-  context,
-}: {
-  item: TreeItem<MenuTreeNode>;
-  context: TreeItemRenderContext;
-}) {
-  const types: MenuTreeNode['type'][] = ['item', 'category'];
-
-  console.log({ i: item.data.type });
-
+export function RenderItemTitle({ item }: { item: TreeItem<MenuTreeNode> }) {
   return (
     <div className="flex w-full items-center justify-between gap-2">
       <div className="flex items-center gap-2">
@@ -49,17 +38,6 @@ export function RenderItemTitle({
           </span>
         )}
       </div>
-      <Badge
-        variant="secondary"
-        className={cn('capitalize', {
-          'border-blue-200 bg-blue-50 text-blue-700':
-            item.data.type === 'category',
-          'border-green-200 bg-green-50 text-green-700':
-            item.data.type === 'item',
-        })}
-      >
-        {item.data.type}
-      </Badge>
     </div>
   );
 }

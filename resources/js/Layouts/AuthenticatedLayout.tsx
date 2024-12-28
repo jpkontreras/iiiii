@@ -23,6 +23,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
 import { Link, usePage } from '@inertiajs/react';
 import {
   BadgeCheck,
@@ -39,7 +40,8 @@ import { PropsWithChildren, ReactNode } from 'react';
 export default function Authenticated({
   header,
   children,
-}: PropsWithChildren<{ header?: ReactNode }>) {
+  classname,
+}: PropsWithChildren<{ header?: ReactNode; classname?: string }>) {
   const {
     breadcrumbs,
     auth: { user },
@@ -265,7 +267,11 @@ export default function Authenticated({
             {header}
           </header>
 
-          <main className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-50 p-6 dark:bg-gray-900">
+          <main
+            className={cn(
+              'flex-1 overflow-y-auto overflow-x-hidden bg-gray-50 dark:bg-gray-900',
+            )}
+          >
             {children}
           </main>
         </div>
