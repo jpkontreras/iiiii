@@ -1,10 +1,19 @@
 <?php
 
 return [
+
+
+  'header' => [
+    'title' => "Mis Restaurantes ",
+    "subtitle" => "Administra tus restaurantes"
+  ],
   // Index page
   'title' => 'Restaurantes',
   'view_details' => 'Ver Detalles',
   'go_to_dashboard' => 'Ir al Panel',
+  'option_delete' => "Eliminar",
+
+
 
   // Show page
   'description' => 'Descripción',

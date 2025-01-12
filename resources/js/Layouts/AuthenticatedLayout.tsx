@@ -1,5 +1,6 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import Breadcrumbs from '@/Components/Breadcrumbs';
+import { Header } from '@/Components/Header';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -25,6 +26,7 @@ import {
 } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 import { Link, usePage } from '@inertiajs/react';
+import { __ } from 'laravel-translator';
 import {
   BadgeCheck,
   Building2,
@@ -40,7 +42,6 @@ import { PropsWithChildren, ReactNode } from 'react';
 export default function Authenticated({
   header,
   children,
-  classname,
 }: PropsWithChildren<{ header?: ReactNode; classname?: string }>) {
   const {
     breadcrumbs,
@@ -264,7 +265,12 @@ export default function Authenticated({
               </div>
             </div>
             <Separator />
-            {header}
+            {header ?? (
+              <Header
+                title={__('restaurant.header_title')}
+                subtitle={__('restaurant.header_subtitle')}
+              />
+            )}
           </header>
 
           <main

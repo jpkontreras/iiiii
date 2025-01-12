@@ -31,24 +31,24 @@ export default function Restaurant() {
     <>
       <Head title={__('onboarding.steps.restaurant_info')} />
 
-      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background py-2">
+        <div className="rounded-full bg-gray-50 p-5">
+          <ApplicationLogo className="size-64 fill-current text-gray-500 lg:size-56" />
+        </div>
+
         <form onSubmit={handleSubmit}>
           <Card className="w-full max-w-2xl border-none shadow-none">
-            <div className="mt-4 flex justify-center md:-mt-24">
-              <ApplicationLogo className="w-72 rounded-3xl p-5" />
-            </div>
-
             <CardHeader>
-              <CardTitle className="text-center text-2xl">
+              <CardTitle className="text-center font-dmsans text-5xl font-light">
                 {__('onboarding.restaurant.title')}
               </CardTitle>
-              <CardDescription className="mt-2 text-center text-lg">
+              <CardDescription className="mt-2 text-center text-base">
                 {__('onboarding.description')}
               </CardDescription>
             </CardHeader>
 
             <CardContent>
-              <div className="space-y-6">
+              <div className="space-y-2">
                 <div className="flex items-center gap-3">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
                     <Building2 className="h-5 w-5" />

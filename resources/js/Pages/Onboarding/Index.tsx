@@ -36,10 +36,10 @@ export default function OnboardingIndex() {
             </div>
 
             <CardHeader>
-              <CardTitle className="text-center text-2xl">
+              <CardTitle className="text-center font-dmsans text-5xl font-light tracking-tight">
                 {__('onboarding.welcome')}
               </CardTitle>
-              <CardDescription className="mt-2 text-center text-lg">
+              <CardDescription className="mt-2 text-center text-base">
                 {__('onboarding.description')}
               </CardDescription>
             </CardHeader>
@@ -47,7 +47,7 @@ export default function OnboardingIndex() {
             <CardContent>
               <div className="space-y-8">
                 <div className="rounded-lg bg-muted p-4">
-                  <h4 className="mb-2 font-semibold">
+                  <h4 className="mb-2 font-dmsans font-semibold">
                     {__('onboarding.agreement.title')}
                   </h4>
                   <p className="mb-4 text-sm text-muted-foreground">

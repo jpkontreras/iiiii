@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
     <link href="https://fonts.bunny.net/css?family=montserrat:200,400,700,900|prompt:200,400,700,900" rel="stylesheet" />
-    <link href="https://fonts.bunny.net/css?family=prompt:200,400,700,900" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,100..1000&display=swap" rel="stylesheet">
 
     <!-- Scripts -->
     @routes
